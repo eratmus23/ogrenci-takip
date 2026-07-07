@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mustafa Erkan Atalay — Akıllı Saat Uyumlu Takip Paneli</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #f1f5f9;
+            --surface: #ffffff;
+            --primary: #1e3a8a;
+            --accent: #3b82f6;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --text: #0f172a;
+            --text-light: #64748b;
+            --whatsapp: #25d366;
+            --whatsapp-reminder: #075e54;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg); color: var(--text); padding: 10px; padding-bottom: 80px; font-size: 14px; transition: all 0.3s ease; }
+        
+        /* SAAT MODU STİLLERİ (Ekranı Küçültüp Yuvarlar/Kareleştirir) */
+        body.watch-mode {
+            background: #000000 !important;
+            color: #ffffff !important;
+            max-width: 320px;
+            margin: 0 auto;
+            padding: 8px;
+            border-radius: 40px; /* Akıllı saat ekran hissi */
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        }
+        body.watch-mode header, body.watch-mode .card:first-of-type { display: none !important; } /* Formları gizle, sadece listeyi göster */
+        body.watch-mode .item-row { background: #121212; border: 1px solid #2d3748; color: white; padding: 8px; border-radius: 16px; }
+        body.watch-mode .form-control { background: #1e293b; color: white; border-color: #475569; }
+        body.watch-mode .student-check-item { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; padding: 6px 4px; font-size: 0.75rem; }
+        body.watch-mode .history-badge { background: #334155; color: white; }
+        body.watch-mode .item-name { font-size: 0.9rem; color: #fff; }
+        body.watch-mode .nav-tabs .tab-btn { padding: 8px 4px; font-size: 0.75rem; }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white; padding: 15px; border-radius: 12px; margin-bottom: 15px;
+            position: relative; box-shadow: 0 4px 15px rgba(30, 58, 138, 0.1);
+        }
+        header h1 { font-size: 1.2rem; font-weight: 700; margin-bottom: 2px; }
+        header p { font-size: 0.75rem; opacity: 0.9; }
+        
+        .watch-toggle {
+            position: absolute; right: 15px; top: 18px; background: rgba(255,255,255,0.2);
+            border: none; color: white; padding: 8px; border-radius: 50%; cursor: pointer; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;
+        }
+
+        .nav-tabs { display: flex; gap: 8px; margin-bottom: 15px; }
+        .tab-btn {
+            flex: 1; padding: 12px 8px; border: none; border-radius: 10px; background: #e2e8f0;
+            font-weight: 700; cursor: pointer; font-size: 0.85rem; color: var(--text-light);
+            display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s;
+        }
+        .tab-btn.active { background: var(--primary); color: white; }
+
+        .card { background: var(--surface); padding: 15px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); margin-bottom: 15px; }
+        .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; color: var(--primary); }
+
+        .form-group { margin-bottom: 10px; }
+        .form-group label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 4px; color: var(--text-light); }
+        .form-control { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem; outline: none; background: #f8fafc; }
+        
+        .date-row { display: grid; grid-template-columns: 2fr 1fr; gap: 8px; }
+
+        .btn { padding: 12px; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; color: white; transition: 0.1s; width: 100%; }
+        .btn-primary { background: var(--primary); }
+        .btn-success { background: var(--success); }
+        .btn-danger { background: var(--danger); }
+        .btn-wa { background: var(--whatsapp); }
+        .btn-wa-rem { background: var(--whatsapp-reminder); }
+
+        .item-row { background: var(--surface); border-radius: 12px; padding: 12px; margin-bottom: 12px; border: 1px solid #e2e8f0; }
+        .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .item-name { font-weight: 700; font-size: 1rem; }
+        
+        .student-check-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin: 10px 0; }
+        .student-check-item { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; padding: 10px 6px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .student-check-item.failed { border-color: var(--danger); background: #fef2f2; color: var(--danger); }
+        .student-check-item.excused { border-color: var(--warning); background: #fffbeb; color: var(--warning); }
+
+        .history-badge { display: inline-block; font-size: 0.75rem; padding: 3px 6px; border-radius: 6px; background: #f1f5f9; margin-right: 4px; margin-top: 4px; font-weight: 600; }
+        .history-list { margin-top: 8px; padding-top: 8px; border-top: 1px dashed #e2e8f0; }
+        
+        .mobile-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
+        .btn-small { padding: 8px; font-size: 0.75rem; border-radius: 6px; }
+
+        .profile-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 10px 0; }
+        .stat-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 4px; text-align: center; }
+        .stat-box .num { font-size: 1.1rem; font-weight: 700; color: var(--primary); }
+        .stat-box .lbl { font-size: 0.65rem; color: var(--text-light); }
+        .profile-detail { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e2e8f0; }
+        .profile-detail.open { display: block; }
+        .profile-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; padding: 6px 0; border-bottom: 1px solid #f1f5f9; }
+        .profile-row-tag { font-size: 0.65rem; padding: 2px 6px; border-radius: 5px; background: var(--primary); color: white; margin-right: 4px; }
+        .profile-row-tag.ind { background: var(--accent); }
+
+        /* Saat modunda yüzen geri dönüş butonu */
+        #watch-exit-btn { display: none; position: fixed; bottom: 10px; right: 10px; background: var(--danger); color: white; border: none; padding: 8px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; z-index: 9999; }
+        body.watch-mode #watch-exit-btn { display: block; }
+    </style>
+</head>
+<body>
+
+    <button id="watch-exit-btn" onclick="toggleWatchMode()"><i class="fa-solid fa-mobile-screen"></i> Çık</button>
+
+    <header>
+        <h1 id="teacher-name" onclick="editTeacherName()" style="cursor:pointer;" title="İsminizi değiştirmek için tıklayın">Mustafa Erkan Atalay</h1>
+        <p>Ödev Takip Paneli</p>
+        <button class="watch-toggle" onclick="toggleWatchMode()" title="Akıllı Saat Modu"><i class="fa-solid fa-watch-apple"></i></button>
+        <button class="watch-toggle" onclick="editReminderOffset()" title="Hatırlatma Süresi Ayarı" style="right:50px;"><i class="fa-solid fa-gear"></i></button>
+    </header>
+
+    <div class="nav-tabs">
+        <button class="tab-btn active" id="btn-tab-dershane" onclick="switchTab('dershane')"><i class="fa-solid fa-users"></i> Dershane</button>
+        <button class="tab-btn" id="btn-tab-bireysel" onclick="switchTab('bireysel')"><i class="fa-solid fa-user-graduated"></i> Özel Ders</button>
+        <button class="tab-btn" id="btn-tab-ogrenciler" onclick="switchTab('ogrenciler')"><i class="fa-solid fa-id-card"></i> Öğrenciler</button>
+    </div>
+
+    <!-- ================== DERSHANE SEKMESİ ================== -->
+    <div id="tab-dershane" class="tab-content">
+        <div class="card">
+            <div class="card-title"><i class="fa-solid fa-folder-plus"></i> Sınıf / Ödev Ekle</div>
+            <div class="form-group">
+                <label>Sınıf Kodu / Adı</label>
+                <input type="text" id="class-name" class="form-control" placeholder="Örn: 12MF1">
+            </div>
+            <div class="form-group">
+                <label>Öğrenci Listesi (Kopyala/Yapıştır)</label>
+                <textarea id="class-excel" class="form-control" style="height: 60px;" placeholder="Her satıra bir isim gelecek şekilde..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Branş</label>
+                <select id="class-brans" class="form-control" onchange="loadTopics('class-brans', 'class-konu')"></select>
+            </div>
+            <div class="form-group">
+                <label>Ödev Konusu</label>
+                <select id="class-konu" class="form-control"></select>
+            </div>
+            <div class="form-group">
+                <label>Kaynak / Sayfa</label>
+                <input type="text" id="class-task" class="form-control" placeholder="Örn: 345 Yayınları Limit Test 1">
+            </div>
+            <div class="form-group">
+                <label>Veriliş Tarihi</label>
+                <input type="date" id="class-given-date" class="form-control">
+            </div>
+            <div class="date-row">
+                <div class="form-group">
+                    <label>Kontrol Tarihi</label>
+                    <input type="date" id="class-date" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Saat</label>
+                    <input type="time" id="class-time" class="form-control" value="00:00">
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="addClassHomework()"><i class="fa-solid fa-save"></i> Kaydet</button>
+        </div>
+
+        <div class="card-title" style="padding-left:5px;"><i class="fa-solid fa-list"></i> Aktif Sınıflar</div>
+        <div id="dershane-listesi"></div>
+    </div>
+
+    <!-- ================== BİREYSEL SEKMESİ ================== -->
+    <div id="tab-bireysel" class="tab-content" style="display: none;">
+        <div class="card">
+            <div class="card-title"><i class="fa-solid fa-user-plus"></i> Özel Ders Ödevi Ekle</div>
+            <div class="form-group">
+                <label>Öğrenci Adı</label>
+                <input type="text" id="ind-name" class="form-control" placeholder="Örn: Ege Külcü">
+            </div>
+            <div class="form-group">
+                <label>Veli/Öğrenci Telefonu (WhatsApp)</label>
+                <input type="tel" id="ind-phone" class="form-control" placeholder="05XX XXX XX XX">
+            </div>
+            <div class="form-group">
+                <label>Branş</label>
+                <select id="ind-brans" class="form-control" onchange="loadTopics('ind-brans', 'ind-konu')"></select>
+            </div>
+            <div class="form-group">
+                <label>Ödev Konusu</label>
+                <select id="ind-konu" class="form-control"></select>
+            </div>
+            <div class="form-group">
+                <label>Kaynak / Sayfa</label>
+                <input type="text" id="ind-task" class="form-control" placeholder="Örn: Orijinal Mat Türev Fasikülü">
+            </div>
+            <div class="form-group">
+                <label>Veriliş Tarihi</label>
+                <input type="date" id="ind-given-date" class="form-control">
+            </div>
+            <div class="date-row">
+                <div class="form-group">
+                    <label>Kontrol Tarihi</label>
+                    <input type="date" id="ind-date" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Saat</label>
+                    <input type="time" id="ind-time" class="form-control" value="23:59">
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="addIndividualHomework()"><i class="fa-solid fa-save"></i> Kaydet</button>
+        </div>
+
+        <div class="card-title" style="padding-left:5px;"><i class="fa-solid fa-chart-line"></i> Bireysel Takip</div>
+        <div id="bireysel-listesi"></div>
+    </div>
+
+    <!-- ================== ÖĞRENCİLER SEKMESİ ================== -->
+    <div id="tab-ogrenciler" class="tab-content" style="display: none;">
+        <div class="card">
+            <div class="card-title"><i class="fa-solid fa-magnifying-glass"></i> Öğrenci Ara</div>
+            <div class="form-group" style="margin-bottom:0;">
+                <input type="text" id="ogrenci-arama" class="form-control" placeholder="İsme göre filtrele..." oninput="renderOgrenciler()">
+            </div>
+        </div>
+        <div class="card-title" style="padding-left:5px;"><i class="fa-solid fa-users-line"></i> Tüm Öğrenciler (Birleşik Profil)</div>
+        <div id="ogrenciler-listesi"></div>
+    </div>
+
+    <script>
+        const mufredat = {
+            "Mat-1 (Temel)": [
+                "Temel Kavramlar & Sayı Kümeleri", "Ardışık Sayılar & Faktöriyel", "Sayı Basamakları", 
+                "Bölme - Bölünebilme Kuralları", "EBOB - EKOK", "Rasyonel & Ondalık Sayılar", 
+                "Birinci Dereceden Denklemler & Eşitsizlikler", "Mutlak Değer", "Üslü İfadeler", 
+                "Köklü İfadeler", "Çarpanlara Ayırma", "Oran - Oranti", "Sayı-Kesir Problemleri", 
+                "Yaş Problemleri", "İşçi Problemleri", "Hız / Hareket Problemleri", 
+                "Yüzde, Kar-Zarar, Karışım Problemleri", "Grafik Problemleri", "Kümeler & Kartezyen Çarpım", 
+                "Mantık", "Fonksiyonlar (Temel & Grafik)", "Permütasyon & Kombinasyon", 
+                "Binom Açılımı & Olasılık", "İstatiksel Veri Analizi"
+            ],
+            "Mat-2 (İleri)": [
+                "Polinomlar & Çözümleri", "İkinci Dereceden Denklemler", "Karmaşık Sayılar", 
+                "Eşitsizlikler ve Eşitsizlik Sistemleri", "Parabol (İkinci Dereceden Fonksiyonlar)", 
+                "Logaritma Fonksiyonu ve Denklemleri", "Diziler & Aritmetik-Geometrik Diziler", 
+                "Trigonometri-1 (Yönlü Açılar, Teoremler)", "Trigonometri-2 (Toplam-Fark, Yarım Açı, Denklemler)", 
+                "Limit ve Süreklilik", "Türev Alma Kuralları", "Türevin Geometrik Yorumu & Teğet", 
+                "Artan-Azalan Fonksiyonlar & Maksimum-Minimum Problemleri", "Belirsiz İntegral & Kuralları", 
+                "Belirli İntegral & Alan Hesabı"
+            ],
+            "Geometri": [
+                "Doğruda ve Üçgende Açılar", "Dik Üçgen & Trigonometrik Oranlar", "İkizkenar ve Eşkenar Üçgen", 
+                "Üçgende Alan & Kenarortay-Açıortay", "Üçgende Benzerlik & Eşlik", "Üçgen Eşitsizlikleri", 
+                "Çokgenler & Düzgün Çokgenler", "Paralelkenar & Eşkenar Dörtgen", "Dikdörtgen & Kare", 
+                "Deltoid & Yamuk", "Çemberde Açılar & Uzunluklar", "Dairenin Çevresi ve Alanı", 
+                "Prizma & Silindir (Katı Cisimler)", "Piramit & Koni & Küre", "Noktanın ve Doğrunun Analitiği", 
+                "Çemberin Analitik İncelenmesi", "Dönüşüm Geometrisi (Öteleme, Döndürme)"
+            ]
+        };
+
+        // v9: Öğrenciler artık merkezi bir listede (db.ogrenciler) tutulur ve
+        // hem dershane hem bireysel kayıtlar isim yerine studentId ile bu listeye bağlanır.
+        // Böylece aynı öğrencinin farklı derslerdeki geçmişi tek profilde birleşir.
+        let db = JSON.parse(localStorage.getItem('mobil_zumre_v9')) || null;
+
+        if (!db) {
+            // Eski (v8) veri varsa göç et, yoksa sıfırdan başla.
+            const eski = JSON.parse(localStorage.getItem('mobil_zumre_v8')) || { dershane: [], bireysel: [] };
+            db = { dershane: eski.dershane || [], bireysel: eski.bireysel || [], ogrenciler: [] };
+            migrateStudents();
+            saveDB();
+        }
+        if (!db.ogrenciler) db.ogrenciler = [];
+        if (!db.settings) db.settings = { reminderOffsetMinutes: 60, teacherName: 'Mustafa Erkan Atalay' };
+        if (!db.settings.teacherName) db.settings.teacherName = 'Mustafa Erkan Atalay';
+
+        function normalizeName(name) {
+            return (name || '').trim().toLocaleLowerCase('tr').replace(/\s+/g, ' ');
+        }
+
+        // İsme göre öğrenciyi bulur, yoksa yeni bir profil oluşturur ve id'sini döner.
+        function getOrCreateStudent(name) {
+            const clean = (name || '').trim();
+            if (!clean) return null;
+            const key = normalizeName(clean);
+            let ogr = db.ogrenciler.find(o => normalizeName(o.name) === key);
+            if (!ogr) {
+                ogr = { id: Date.now() + Math.floor(Math.random() * 1000), name: clean };
+                db.ogrenciler.push(ogr);
+            }
+            return ogr.id;
+        }
+
+        function getStudentName(id) {
+            const o = db.ogrenciler.find(x => x.id === id);
+            return o ? o.name : '(silinmiş öğrenci)';
+        }
+
+        // Telefonu WhatsApp linkinin istediği "90XXXXXXXXXX" formatına çevirir.
+        function normalizePhone(phone) {
+            let d = (phone || '').replace(/\D/g, ''); // sadece rakamlar
+            if (!d) return null;
+            if (d.startsWith('90') && d.length === 12) return d;
+            if (d.startsWith('0') && d.length === 11) return '90' + d.slice(1);
+            if (d.length === 10) return '90' + d; // başında 0 olmadan girilmiş TR numarası
+            return d; // farklı formatta girilmişse olduğu gibi bırak
+        }
+
+        // Bir öğrencinin telefonunu profiline kaydeder (boş girilirse mevcut numarayı silmez).
+        function saveStudentPhone(id, phone) {
+            const clean = (phone || '').trim();
+            if (!clean) return;
+            const ogr = db.ogrenciler.find(o => o.id === id);
+            if (ogr) ogr.phone = clean;
+        }
+
+        function editStudentPhone(id) {
+            const ogr = db.ogrenciler.find(o => o.id === id);
+            if (!ogr) return;
+            const yeni = prompt("Telefon numarası (WhatsApp):", ogr.phone || '');
+            if (yeni === null) return;
+            ogr.phone = yeni.trim();
+            saveDB(); renderOgrenciler();
+        }
+
+        // Kontrol tarihi/saatine göre Google Calendar'a tek tıkla etkinlik ekleme linki açar.
+        // Kullanıcı metnini onclick="" attribute'u içine güvenle gömmek için tırnakları kaçırır.
+        function escAttr(str) {
+            return (str || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        }
+
+        // Kontrol tarihi/saatine göre TEK bir Google Calendar etkinliği açar (dahili yardımcı fonksiyon).
+        function addToGoogleCalendar(title, details, dateStr, timeStr) {
+            if (!dateStr) { alert("Tarih bilgisi eksik."); return; }
+            const pad = n => n.toString().padStart(2, '0');
+            const toGCalFmt = d => `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
+            const start = new Date(`${dateStr}T${timeStr || '00:00'}:00`);
+            const end = new Date(start.getTime() + 30 * 60000); // 30 dk süreli etkinlik
+            const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${toGCalFmt(start)}/${toGCalFmt(end)}&details=${encodeURIComponent(details)}&ctz=Europe/Istanbul`;
+            window.open(url, '_blank');
+        }
+
+        // Kaç dakika önceden hatırlatma yapılacağını (Ayarlar) düzenler.
+        // Kendi isminizi/imzanızı değiştirir - başlıkta ve tüm otomatik WhatsApp mesajlarında kullanılır.
+        function editTeacherName() {
+            const yeni = prompt("Adınız (başlıkta ve mesaj imzalarında görünecek):", db.settings.teacherName);
+            if (yeni === null || !yeni.trim()) return;
+            db.settings.teacherName = yeni.trim();
+            saveDB();
+            document.getElementById('teacher-name').innerText = db.settings.teacherName;
+        }
+
+        function editReminderOffset() {
+            const mevcut = db.settings.reminderOffsetMinutes;
+            const girilen = prompt("Kontrol saatinden kaç dakika önce hatırlatma etkinliği oluşturulsun?", mevcut);
+            if (girilen === null) return;
+            const dk = parseInt(girilen, 10);
+            if (isNaN(dk) || dk < 0) { alert("Geçerli bir dakika değeri girin."); return; }
+            db.settings.reminderOffsetMinutes = dk;
+            saveDB();
+            alert(`Hatırlatma süresi ${dk} dakika olarak ayarlandı.`);
+        }
+
+        // Tek tıkla HEM hatırlatma HEM kontrol etkinliğini takvime ekler (2 ayrı event).
+        function addBothToCalendar(baseTitle, details, controlDate, controlTime) {
+            if (!controlDate) { alert("Tarih bilgisi eksik."); return; }
+            const offset = db.settings.reminderOffsetMinutes || 60;
+            const kontrolAn = new Date(`${controlDate}T${controlTime || '00:00'}:00`);
+            const hatirlatmaAn = new Date(kontrolAn.getTime() - offset * 60000);
+
+            const pad2 = n => n.toString().padStart(2, '0');
+            const dStr = d => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+            const tStr = d => `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+
+            // 1) Hatırlatma etkinliği: öğrenciye/veliye mesaj gönderme anı
+            addToGoogleCalendar(`🔔 Hatırlatma Gönder: ${baseTitle}`, `Öğrenciye/veliye WhatsApp hatırlatması gönderme zamanı.\n${details}`, dStr(hatirlatmaAn), tStr(hatirlatmaAn));
+
+            // 2) Kontrol etkinliği: ödevi kontrol etme anı
+            addToGoogleCalendar(`✅ Kontrol Et: ${baseTitle}`, `Ödevi kontrol edip sonucu girme zamanı.\n${details}`, controlDate, controlTime);
+        }
+
+        // Eski verilerde studentId olmadığı için isimlere bakarak öğrenci profillerini oluşturur
+        // ve mevcut kayıtları bu profillere bağlar (mevcut veriyi kaybetmeden).
+        function migrateStudents() {
+            db.dershane.forEach(c => {
+                (c.students || []).forEach(st => {
+                    if (!st.id) st.id = getOrCreateStudent(st.name);
+                });
+            });
+            db.bireysel.forEach(ind => {
+                if (!ind.studentId) ind.studentId = getOrCreateStudent(ind.studentName);
+            });
+        }
+
+        window.onload = function() {
+            const bugun = new Date().toISOString().split('T')[0];
+            document.querySelectorAll('input[type="date"]').forEach(el => el.value = bugun);
+            initBranchSelect('class-brans');
+            initBranchSelect('ind-brans');
+            document.getElementById('teacher-name').innerText = db.settings.teacherName;
+            renderAll();
+        };
+
+        // AKILLI SAAT MODUNU TETİKLEME FONKSİYONU
+        function toggleWatchMode() {
+            document.body.classList.toggle('watch-mode');
+        }
+
+        function initBranchSelect(id) {
+            const select = document.getElementById(id);
+            select.innerHTML = "<option value=''>--- Seçin ---</option>";
+            for (let b in mufredat) { select.innerHTML += `<option value="${b}">${b}</option>`; }
+        }
+
+        function loadTopics(bId, kId) {
+            const bName = document.getElementById(bId).value;
+            const kSelect = document.getElementById(kId);
+            kSelect.innerHTML = "";
+            if(bName && mufredat[bName]) {
+                mufredat[bName].forEach(k => { kSelect.innerHTML += `<option value="${k}">${k}</option>`; });
+            }
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+            document.getElementById('btn-tab-' + tab).classList.add('active');
+            document.getElementById('tab-' + tab).style.display = 'block';
+            if (tab === 'ogrenciler') renderOgrenciler();
+        }
+
+        function saveDB() { localStorage.setItem('mobil_zumre_v9', JSON.stringify(db)); }
+        function trDate(dStr) { return dStr.split('-').reverse().join('.'); }
+
+        function isTimeExpired(dateStr, timeStr) {
+            const now = new Date();
+            const target = new Date(`${dateStr}T${timeStr || '00:00'}:00`);
+            return now > target;
+        }
+
+        function addClassHomework() {
+            const name = document.getElementById('class-name').value.trim();
+            const excelText = document.getElementById('class-excel').value.trim();
+            const brans = document.getElementById('class-brans').value;
+            const konu = document.getElementById('class-konu').value;
+            const task = document.getElementById('class-task').value.trim();
+            const gDate = document.getElementById('class-given-date').value;
+            const cDate = document.getElementById('class-date').value;
+            const cTime = document.getElementById('class-time').value;
+
+            if(!name || !excelText || !cDate) { alert("Eksik alan var!"); return; }
+
+            const students = excelText.split('\n').map(i => i.trim()).filter(i => i.length > 0).map(isim => ({ id: getOrCreateStudent(isim), name: isim, status: 'Yapıldı' }));
+            
+            db.dershane.push({ id: Date.now(), className: name, students, brans, konu, task, givenDate: gDate, controlDate: cDate, controlTime: cTime, isCompleted: false });
+            saveDB(); renderAll();
+        }
+
+        function toggleClassStudentStatus(classId, idx) {
+            const c = db.dershane.find(i => i.id === classId);
+            if(c) {
+                const cur = c.students[idx].status;
+                c.students[idx].status = cur === 'Yapıldı' ? 'Yapmadı' : cur === 'Yapmadı' ? 'Eksik' : 'Yapıldı';
+                saveDB(); renderAll();
+            }
+        }
+
+        function saveClassReport(id) {
+            const c = db.dershane.find(i => i.id === id);
+            if(c) { c.isCompleted = true; saveDB(); renderAll(); }
+        }
+
+        function sendClassWhatsApp(id) {
+            const c = db.dershane.find(i => i.id === id);
+            if(!c) return;
+
+            if (!isTimeExpired(c.controlDate, c.controlTime)) {
+                let msg = `📢 *ÖDEV HATIRLATMASI (${c.className})*\n\n`;
+                msg += `Arkadaşlar, *${c.brans}* dersinden verilen *${c.konu}* konulu ödevimizin teslim zamanı yaklaşıyor.\n\n`;
+                msg += `📖 *Kaynak:* ${c.task}\n`;
+                msg += `📅 *Son Süre:* ${trDate(c.controlDate)} saat ${c.controlTime || '00:00'}\n\n`;
+                msg += `Lütfen belirtilen saate kadar eksiklerinizi tamamlayın. Başarılar dilerim! 🎯\n\n— ${db.settings.teacherName}`;
+                window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+            } else {
+                const yapmayanlar = c.students.filter(s => s.status === 'Yapmadı').map(s => s.name);
+                const eksikler = c.students.filter(s => s.status === 'Eksik').map(s => s.name);
+                
+                let msg = `Değerli Rehberlik Servisi,\n\n*${trDate(c.controlDate)}* tarihinde saat *${c.controlTime}* itibarıyla *${c.className}* sınıfının *${c.brans} (${c.konu})* ödevi kontrol edildi.\n\n`;
+                msg += `❌ *Yapmayanlar:* ${yapmayanlar.length > 0 ? yapmayanlar.join(', ') : 'Yok'}\n`;
+                msg += `⚠️ *Eksikler:* ${eksikler.length > 0 ? eksikler.join(', ') : 'Yok'}\n\n— ${db.settings.teacherName}`;
+                window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+            }
+        }
+
+        function addIndividualHomework() {
+            const name = document.getElementById('ind-name').value.trim();
+            const phone = document.getElementById('ind-phone').value.trim();
+            const brans = document.getElementById('ind-brans').value;
+            const konu = document.getElementById('ind-konu').value;
+            const task = document.getElementById('ind-task').value.trim();
+            const gDate = document.getElementById('ind-given-date').value;
+            const cDate = document.getElementById('ind-date').value;
+            const cTime = document.getElementById('ind-time').value;
+
+            if(!name || !cDate) { alert("Eksik alan var!"); return; }
+
+            const studentId = getOrCreateStudent(name);
+            saveStudentPhone(studentId, phone);
+
+            db.bireysel.push({ id: Date.now(), studentId, studentName: name, brans, konu, task, givenDate: gDate, controlDate: cDate, controlTime: cTime, status: 'Bekliyor', results: null });
+            saveDB(); renderAll();
+        }
+
+        function closeIndividualTask(id) {
+            const total = parseInt(prompt("Toplam Soru Sayısı?"), 10) || 0;
+            const dogru = parseInt(prompt("Doğru Sayısı?"), 10) || 0;
+            const yanlis = parseInt(prompt("Yanlış Sayısı?"), 10) || 0;
+            const ind = db.bireysel.find(i => i.id === id);
+            if(ind) {
+                ind.status = 'Tamamlandı';
+                ind.results = { total, dogru, yanlis, bos: total - (dogru+yanlis), score: total > 0 ? Math.round((dogru/total)*100) : 0 };
+                saveDB(); renderAll();
+            }
+        }
+
+        function sendIndividualWhatsApp(id) {
+            const ind = db.bireysel.find(i => i.id === id);
+            if(!ind) return;
+
+            const ogr = db.ogrenciler.find(o => o.id === ind.studentId);
+            const telNo = ogr ? normalizePhone(ogr.phone) : null;
+            const phoneParam = telNo ? `phone=${telNo}&` : '';
+
+            if (ind.status === 'Bekliyor' && !isTimeExpired(ind.controlDate, ind.controlTime)) {
+                let msg = `🔔 *Ödev Kontrol Hatırlatması*\n\n`;
+                msg += `*${ind.studentName}* isimli öğrencimizin dikkatine;\n`;
+                msg += `Bugünkü özel dersimiz sonrasında verilen *${ind.brans} (${ind.konu})* ödevinin tamamlanıp bilgi verilmesi gereken son saat dilimi:\n\n`;
+                msg += `📖 *Kaynak:* ${ind.task}\n`;
+                msg += `⏱️ *Son Süre:* Bugün (*${trDate(ind.controlDate)}*) saat *${ind.controlTime}* öncesi (00.00 olmadan).\n\n`;
+                msg += `Geri dönüşünü bekliyorum, iyi çalışmalar. 🎯\n— ${db.settings.teacherName}`;
+                window.open(`https://api.whatsapp.com/send?${phoneParam}text=${encodeURIComponent(msg)}`, '_blank');
+            } else if (ind.status === 'Tamamlandı' && ind.results) {
+                let msg = `Sayın Velimiz,\n\n*${ind.studentName}* isimli öğrencimizin *${ind.brans} (${ind.konu})* ödev kontrolü tamamlanmıştır.\n\n`;
+                msg += `📊 *Performans Sonuçları:*\n`;
+                msg += `▪️ Toplam Soru: ${ind.results.total}\n▪️ Doğru: ${ind.results.dogru}\n▪️ Yanlış: ${ind.results.yanlis}\n▪️ Boş: ${ind.results.bos}\n`;
+                msg += `🎯 *Başarı Oranı:* %${ind.results.score}\n\nİyi çalışmalar dilerim.\n— ${db.settings.teacherName}`;
+                window.open(`https://api.whatsapp.com/send?${phoneParam}text=${encodeURIComponent(msg)}`, '_blank');
+            }
+        }
+
+        function deleteItem(type, id) { if(confirm("Silinsin mi?")) { db[type] = db[type].filter(i => i.id !== id); saveDB(); renderAll(); } }
+
+        // Bir öğrenci profilini VE ona bağlı tüm ödev kayıtlarını (sınıf + özel ders) kalıcı olarak siler.
+        function deleteStudentCompletely(studentId) {
+            const ogr = db.ogrenciler.find(o => o.id === studentId);
+            if (!ogr) return;
+            const uyari = `"${ogr.name}" isimli öğrenciyi VE ona bağlı tüm ödev kayıtlarını (sınıf + özel ders) kalıcı olarak silmek üzeresiniz.\n\nBu işlem geri alınamaz. Emin misiniz?`;
+            if (!confirm(uyari)) return;
+
+            // Sınıf listelerinden bu öğrenciyi çıkar (sınıfın kendisi silinmez, sadece bu öğrenci)
+            db.dershane.forEach(c => { c.students = (c.students || []).filter(st => st.id !== studentId); });
+            // Bu öğrenciye ait tüm özel ders ödevlerini sil
+            db.bireysel = db.bireysel.filter(ind => ind.studentId !== studentId);
+            // Profili sil
+            db.ogrenciler = db.ogrenciler.filter(o => o.id !== studentId);
+
+            saveDB(); renderAll();
+        }
+
+        function renderAll() {
+            const dershaneDiv = document.getElementById('dershane-listesi');
+            const bireyselDiv = document.getElementById('bireysel-listesi');
+            dershaneDiv.innerHTML = ""; bireyselDiv.innerHTML = "";
+
+            db.dershane.forEach(c => {
+                const card = document.createElement('div'); card.className = 'item-row';
+                let bHtml = "";
+                c.students.forEach((st, idx) => {
+                    let cls = st.status === 'Yapmadı' ? 'failed' : st.status === 'Eksik' ? 'excused' : '';
+                    bHtml += `<div class="student-check-item ${cls}" onclick="${c.isCompleted ? '' : `toggleClassStudentStatus(${c.id}, ${idx})`}">${st.name}</div>`;
+                });
+
+                const expired = isTimeExpired(c.controlDate, c.controlTime);
+                const waBtnClass = !expired ? 'btn-wa-rem' : 'btn-wa';
+                const waBtnText = !expired ? '<i class="fa-solid fa-bullhorn"></i> Hatırlat' : '<i class="fa-brands fa-whatsapp"></i> WhatsApp';
+
+                card.innerHTML = `
+                    <div class="item-header">
+                        <div><span class="item-name">${c.className}</span> <br><small style="color:var(--text-light)">${c.brans} - ${c.konu}</small></div>
+                        <i class="fa-solid fa-trash" style="color:var(--danger); padding:5px;" onclick="deleteItem('dershane', ${c.id})"></i>
+                    </div>
+                    <div style="font-size:0.75rem; background:rgba(0,0,0,0.05); padding:6px; border-radius:6px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; gap:6px;">
+                        <span>📅 ${trDate(c.controlDate)} (${c.controlTime || '00:00'}) | 📖 ${c.task}</span>
+                        <i class="fa-solid fa-calendar-plus" style="color:var(--primary); padding:4px; cursor:pointer;" title="Google Takvim'e Ekle" onclick="addBothToCalendar('${escAttr(c.className)} - ${escAttr(c.brans)}', '${escAttr(c.task)}', '${c.controlDate}', '${c.controlTime}')"></i>
+                    </div>
+                    <div class="student-check-list">${bHtml}</div>
+                    <div class="mobile-actions">
+                        ${c.isCompleted ? '<button class="btn btn-success btn-small" disabled>✓ Kapatıldı</button>' : `<button class="btn btn-success btn-small" onclick="saveClassReport(${c.id})">Kapat</button>`}
+                        <button class="btn ${waBtnClass} btn-small" onclick="sendClassWhatsApp(${c.id})">${waBtnText}</button>
+                    </div>
+                `;
+                dershaneDiv.appendChild(card);
+            });
+
+            db.bireysel.forEach(ind => {
+                const card = document.createElement('div'); card.className = 'item-row';
+                let resHtml = "";
+                if(ind.status === 'Tamamlandı' && ind.results) {
+                    resHtml = `
+                        <div class="history-list">
+                            <span class="history-badge">Soru: ${ind.results.total}</span><span class="history-badge">D: ${ind.results.dogru}</span>
+                            <div style="margin-top:4px; font-weight:700; color:var(--accent); font-size:0.8rem;">Skor: %${ind.results.score}</div>
+                        </div>`;
+                }
+
+                const expired = isTimeExpired(ind.controlDate, ind.controlTime);
+
+                card.innerHTML = `
+                    <div class="item-header">
+                        <div><span class="item-name">${ind.studentName}</span> <br><small style="color:var(--text-light)">${ind.brans}</small></div>
+                        <i class="fa-solid fa-trash" style="color:var(--danger); padding:5px;" onclick="deleteItem('bireysel', ${ind.id})"></i>
+                    </div>
+                    <div style="font-size:0.75rem; background:rgba(0,255,0,0.05); padding:6px; border-radius:6px;">
+                        ⏱️ Son: ${ind.controlTime} | 📖 ${ind.task}
+                    </div>
+                    ${resHtml}
+                    <div class="mobile-actions">
+                        <button class="btn btn-primary btn-small" onclick="addBothToCalendar('${escAttr(ind.studentName)} - ${escAttr(ind.brans)}', '${escAttr(ind.task)}', '${ind.controlDate}', '${ind.controlTime}')"><i class="fa-solid fa-calendar-plus"></i> Takvime Ekle</button>
+                        ${ind.status === 'Bekliyor' ? 
+                            (!expired ? 
+                                `<button class="btn btn-wa-rem btn-small" onclick="sendIndividualWhatsApp(${ind.id})"><i class="fa-solid fa-clock"></i> Akşama Kadar Bitir</button>` : 
+                                `<button class="btn btn-primary btn-small" onclick="closeIndividualTask(${ind.id})">Verileri Gir</button>`
+                            ) : 
+                            `<button class="btn btn-wa btn-small" onclick="sendIndividualWhatsApp(${ind.id})"><i class="fa-brands fa-whatsapp"></i> Rapor Gönder</button>`
+                        }
+                    </div>
+                `;
+                bireyselDiv.appendChild(card);
+            });
+
+            renderOgrenciler();
+        }
+
+        function toggleStudentDetail(id) {
+            const el = document.getElementById('detail-' + id);
+            if (el) el.classList.toggle('open');
+        }
+
+        function renderOgrenciler() {
+            const wrap = document.getElementById('ogrenciler-listesi');
+            if (!wrap) return;
+            wrap.innerHTML = "";
+
+            const filtre = normalizeName(document.getElementById('ogrenci-arama')?.value || '');
+            const liste = db.ogrenciler
+                .filter(o => !filtre || normalizeName(o.name).includes(filtre))
+                .sort((a, b) => a.name.localeCompare(b.name, 'tr'));
+
+            if (liste.length === 0) {
+                wrap.innerHTML = `<div class="card" style="text-align:center; color:var(--text-light);">Kayıtlı öğrenci bulunamadı.</div>`;
+                return;
+            }
+
+            liste.forEach(ogr => {
+                // Dershane geçmişi: bu öğrencinin yer aldığı tüm sınıf ödevleri
+                const dershaneKayitlari = [];
+                db.dershane.forEach(c => {
+                    const st = (c.students || []).find(s => s.id === ogr.id);
+                    if (st) {
+                        dershaneKayitlari.push({
+                            tip: 'sinif', className: c.className, brans: c.brans, konu: c.konu,
+                            controlDate: c.controlDate, status: st.status, isCompleted: c.isCompleted
+                        });
+                    }
+                });
+
+                // Bireysel geçmiş
+                const bireyselKayitlari = db.bireysel.filter(ind => ind.studentId === ogr.id);
+
+                const toplamOdev = dershaneKayitlari.length + bireyselKayitlari.length;
+                const yapilmayanSinif = dershaneKayitlari.filter(k => k.isCompleted && k.status === 'Yapmadı').length;
+                const eksikSinif = dershaneKayitlari.filter(k => k.isCompleted && k.status === 'Eksik').length;
+
+                const tamamlananBireysel = bireyselKayitlari.filter(i => i.status === 'Tamamlandı' && i.results);
+                const ortalamaSkor = tamamlananBireysel.length > 0
+                    ? Math.round(tamamlananBireysel.reduce((sum, i) => sum + i.results.score, 0) / tamamlananBireysel.length)
+                    : null;
+
+                let detayHtml = "";
+                dershaneKayitlari.slice().reverse().forEach(k => {
+                    const renk = k.status === 'Yapmadı' ? 'var(--danger)' : k.status === 'Eksik' ? 'var(--warning)' : 'var(--success)';
+                    detayHtml += `<div class="profile-row">
+                        <span><span class="profile-row-tag">Sınıf</span>${k.className} — ${k.brans} (${k.konu})<br><small style="color:var(--text-light)">${trDate(k.controlDate)}</small></span>
+                        <span style="font-weight:700; color:${renk};">${k.status}</span>
+                    </div>`;
+                });
+                bireyselKayitlari.slice().reverse().forEach(i => {
+                    const sonuc = i.status === 'Tamamlandı' && i.results ? `%${i.results.score}` : 'Bekliyor';
+                    detayHtml += `<div class="profile-row">
+                        <span><span class="profile-row-tag ind">Özel</span>${i.brans} (${i.konu})<br><small style="color:var(--text-light)">${trDate(i.controlDate)}</small></span>
+                        <span style="font-weight:700; color:var(--accent);">${sonuc}</span>
+                    </div>`;
+                });
+                if (!detayHtml) detayHtml = `<div style="text-align:center; color:var(--text-light); font-size:0.8rem;">Henüz ödev kaydı yok.</div>`;
+
+                const card = document.createElement('div');
+                card.className = 'item-row';
+                card.innerHTML = `
+                    <div class="item-header" style="cursor:pointer;" onclick="toggleStudentDetail(${ogr.id})">
+                        <div><span class="item-name">${ogr.name}</span><br>
+                            <small style="color:var(--text-light)">${toplamOdev} ödev kaydı · </small>
+                            <small style="color:${ogr.phone ? 'var(--success)' : 'var(--text-light)'}; cursor:pointer;" onclick="event.stopPropagation(); editStudentPhone(${ogr.id})">
+                                <i class="fa-solid fa-phone"></i> ${ogr.phone ? ogr.phone : 'Telefon ekle'}
+                            </small>
+                        </div>
+                        <i class="fa-solid fa-chevron-down" style="color:var(--text-light); padding:5px;"></i>
+                    </div>
+                    <div style="text-align:right; margin-top:-6px;">
+                        <i class="fa-solid fa-trash" style="color:var(--danger); font-size:0.7rem; cursor:pointer; padding:4px 8px;" title="Öğrenciyi ve tüm kayıtlarını sil" onclick="event.stopPropagation(); deleteStudentCompletely(${ogr.id})"> Öğrenciyi Sil</i>
+                    </div>
+                    <div class="profile-stats">
+                        <div class="stat-box"><div class="num">${toplamOdev}</div><div class="lbl">Toplam Ödev</div></div>
+                        <div class="stat-box"><div class="num" style="color:${(yapilmayanSinif+eksikSinif) > 0 ? 'var(--danger)' : 'var(--success)'}">${yapilmayanSinif}/${eksikSinif}</div><div class="lbl">Yapmadı/Eksik</div></div>
+                        <div class="stat-box"><div class="num">${ortalamaSkor !== null ? '%' + ortalamaSkor : '—'}</div><div class="lbl">Ort. Skor</div></div>
+                    </div>
+                    <div class="profile-detail" id="detail-${ogr.id}">${detayHtml}</div>
+                `;
+                wrap.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
