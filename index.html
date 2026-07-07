@@ -1,4 +1,5 @@
- <!DOCTYPE html>
+
+<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -105,6 +106,9 @@
 
         #watch-exit-btn { display: none; position: fixed; bottom: 10px; right: 10px; background: var(--danger); color: white; border: none; padding: 8px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; z-index: 9999; }
         body.watch-mode #watch-exit-btn { display: block; }
+        
+        /* ELLE YAZMA KUTUSU İÇİN EK STİL */
+        .manual-topic-container { display: none; margin-top: 8px; }
     </style>
 </head>
 <body>
@@ -125,6 +129,7 @@
         <button class="tab-btn" id="btn-tab-ogrenciler" onclick="switchTab('ogrenciler')"><i class="fa-solid fa-id-card"></i> Öğrenciler</button>
     </div>
 
+    <!-- ================== DERSHANE SEKMESİ ================== -->
     <div id="tab-dershane" class="tab-content">
         <div class="card">
             <div class="card-title"><i class="fa-solid fa-folder-plus"></i> Sınıf / Ödev Ekle</div>
@@ -138,11 +143,15 @@
             </div>
             <div class="form-group">
                 <label>Branş</label>
-                <select id="class-brans" class="form-control" onchange="loadTopics('class-brans', 'class-konu')"></select>
+                <select id="class-brans" class="form-control" onchange="loadTopics('class-brans', 'class-konu', 'class-manual-container')"></select>
             </div>
             <div class="form-group">
                 <label>Ödev Konusu</label>
-                <select id="class-konu" class="form-control"></select>
+                <select id="class-konu" class="form-control" onchange="checkManualTopicToggle('class-konu', 'class-manual-container')"></select>
+                <!-- Elle giriş metin alanı -->
+                <div id="class-manual-container" class="manual-topic-container">
+                    <input type="text" id="class-konu-manual" class="form-control" placeholder="Ödev konusunu buraya yazın...">
+                </div>
             </div>
             <div class="form-group">
                 <label>Kaynak / Sayfa</label>
@@ -169,6 +178,7 @@
         <div id="dershane-listesi"></div>
     </div>
 
+    <!-- ================== BİREYSEL SEKMESİ ================== -->
     <div id="tab-bireysel" class="tab-content" style="display: none;">
         <div class="card">
             <div class="card-title"><i class="fa-solid fa-user-plus"></i> Özel Ders Ödevi Ekle</div>
@@ -182,11 +192,15 @@
             </div>
             <div class="form-group">
                 <label>Branş</label>
-                <select id="ind-brans" class="form-control" onchange="loadTopics('ind-brans', 'ind-konu')"></select>
+                <select id="ind-brans" class="form-control" onchange="loadTopics('ind-brans', 'ind-konu', 'ind-manual-container')"></select>
             </div>
             <div class="form-group">
                 <label>Ödev Konusu</label>
-                <select id="ind-konu" class="form-control"></select>
+                <select id="ind-konu" class="form-control" onchange="checkManualTopicToggle('ind-konu', 'ind-manual-container')"></select>
+                <!-- Elle giriş metin alanı -->
+                <div id="ind-manual-container" class="manual-topic-container">
+                    <input type="text" id="ind-konu-manual" class="form-control" placeholder="Ödev konusunu buraya yazın...">
+                </div>
             </div>
             <div class="form-group">
                 <label>Kaynak / Sayfa</label>
@@ -213,6 +227,7 @@
         <div id="bireysel-listesi"></div>
     </div>
 
+    <!-- ================== ÖĞRENCİLER SEKMESİ ================== -->
     <div id="tab-ogrenciler" class="tab-content" style="display: none;">
         <div class="card">
             <div class="card-title"><i class="fa-solid fa-magnifying-glass"></i> Öğrenci Ara</div>
@@ -346,7 +361,6 @@
             alert(`Hatırlatma süresi ${dk} dakika olarak ayarlandı.`);
         }
 
-        // IPHONE ANA EKRAN UYUMLU GÜVENLİ YENİLEME / ÇIKIŞ FONKSİYONU
         function secureExit() {
             if(confirm("Uygulamayı yenilemek ve ana sekmeye dönmek istiyor musunuz? (Verileriniz güvendedir)")) {
                 window.location.reload();
@@ -397,12 +411,28 @@
             for (let b in mufredat) { select.innerHTML += `<option value="${b}">${b}</option>`; }
         }
 
-        function loadTopics(bId, kId) {
+        function loadTopics(bId, kId, manualContainerId) {
             const bName = document.getElementById(bId).value;
             const kSelect = document.getElementById(kId);
             kSelect.innerHTML = "";
+            
+            // Konu listesinin en üstüne her zaman elle giriş seçeneği yerleştirilir
+            kSelect.innerHTML += "<option value='MANUAL'>✍️ LİSTEDE YOK (ELLE YAZACAĞIM)</option>";
+            
             if(bName && mufredat[bName]) {
                 mufredat[bName].forEach(k => { kSelect.innerHTML += `<option value="${k}">${k}</option>`; });
+            }
+            
+            checkManualTopicToggle(kId, manualContainerId);
+        }
+
+        function checkManualTopicToggle(kId, manualContainerId) {
+            const kSelect = document.getElementById(kId);
+            const container = document.getElementById(manualContainerId);
+            if (kSelect.value === 'MANUAL') {
+                container.style.display = 'block';
+            } else {
+                container.style.display = 'none';
             }
         }
 
@@ -427,17 +457,29 @@
             const name = document.getElementById('class-name').value.trim();
             const excelText = document.getElementById('class-excel').value.trim();
             const brans = document.getElementById('class-brans').value;
-            const konu = document.getElementById('class-konu').value;
+            
+            let konu = document.getElementById('class-konu').value;
+            if (konu === 'MANUAL') {
+                konu = document.getElementById('class-konu-manual').value.trim();
+            }
+
             const task = document.getElementById('class-task').value.trim();
             const gDate = document.getElementById('class-given-date').value;
             const cDate = document.getElementById('class-date').value;
             const cTime = document.getElementById('class-time').value;
 
-            if(!name || !excelText || !cDate) { alert("Eksik alan var!"); return; }
+            if(!name || !excelText || !konu || !cDate) { alert("Eksik alan var! Sınıf, Öğrenci listesi, Konu ve Kontrol Tarihi zorunludur."); return; }
 
             const students = excelText.split('\n').map(i => i.trim()).filter(i => i.length > 0).map(isim => ({ id: getOrCreateStudent(isim), name: isim, status: 'Yapıldı' }));
             
             db.dershane.push({ id: Date.now(), className: name, students, brans, konu, task, givenDate: gDate, controlDate: cDate, controlTime: cTime, isCompleted: false });
+            
+            // Kutuları temizle
+            document.getElementById('class-name').value = '';
+            document.getElementById('class-excel').value = '';
+            document.getElementById('class-task').value = '';
+            document.getElementById('class-konu-manual').value = '';
+            
             saveDB(); renderAll();
         }
 
@@ -481,18 +523,30 @@
             const name = document.getElementById('ind-name').value.trim();
             const phone = document.getElementById('ind-phone').value.trim();
             const brans = document.getElementById('ind-brans').value;
-            const konu = document.getElementById('ind-konu').value;
+            
+            let konu = document.getElementById('ind-konu').value;
+            if (konu === 'MANUAL') {
+                konu = document.getElementById('ind-konu-manual').value.trim();
+            }
+
             const task = document.getElementById('ind-task').value.trim();
             const gDate = document.getElementById('ind-given-date').value;
             const cDate = document.getElementById('ind-date').value;
             const cTime = document.getElementById('ind-time').value;
 
-            if(!name || !cDate) { alert("Eksik alan var!"); return; }
+            if(!name || !konu || !cDate) { alert("Eksik alan var! Öğrenci adı, Konu ve Kontrol Tarihi zorunludur."); return; }
 
             const studentId = getOrCreateStudent(name);
             saveStudentPhone(studentId, phone);
 
             db.bireysel.push({ id: Date.now(), studentId, studentName: name, brans, konu, task, givenDate: gDate, controlDate: cDate, controlTime: cTime, status: 'Bekliyor', results: null });
+            
+            // Kutuları temizle
+            document.getElementById('ind-name').value = '';
+            document.getElementById('ind-phone').value = '';
+            document.getElementById('ind-task').value = '';
+            document.getElementById('ind-konu-manual').value = '';
+            
             saveDB(); renderAll();
         }
 
@@ -598,7 +652,7 @@
 
                 card.innerHTML = `
                     <div class="item-header">
-                        <div><span class="item-name">${ind.studentName}</span> <br><small style="color:var(--text-light)">${ind.brans}</small></div>
+                        <div><span class="item-name">${ind.studentName}</span> <br><small style="color:var(--text-light)">${ind.brans} - ${ind.konu}</small></div>
                         <i class="fa-solid fa-trash" style="color:var(--danger); padding:5px;" onclick="deleteItem('bireysel', ${ind.id})"></i>
                     </div>
                     <div style="font-size:0.75rem; background:rgba(0,255,0,0.05); padding:6px; border-radius:6px;">
