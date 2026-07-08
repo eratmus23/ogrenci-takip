@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mustafa Erkan Atalay — Akıllı Eğitim Asistanı v12</title>
+    <title>Sibel Tezel Atalay — Akıllı Eğitim Asistanı v12</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -94,7 +94,7 @@
 <body>
 
     <header id="main-header">
-        <h1 id="teacher-name" onclick="editTeacherName()" style="cursor:pointer;">Mustafa Erkan Atalay</h1>
+        <h1 id="teacher-name" onclick="editTeacherName()" style="cursor:pointer;">Sibel Tezel Atalay</h1>
         <p>Akıllı Otomasyon Takip Paneli v12</p>
         <button class="exit-btn" onclick="secureExit()"><i class="fa-solid fa-power-off"></i> Çıkış</button>
         <button onclick="editReminderOffset()" style="position: absolute; right: 15px; top: 18px; background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px; border-radius: 50%; width: 35px; height: 35px;"><i class="fa-solid fa-gear"></i></button>
@@ -238,6 +238,29 @@
                 <button class="btn btn-success" onclick="saveIndividualSetup()"><i class="fa-solid fa-plus"></i> Öğrenciyi Kaydet</button>
             </div>
 
+            <!-- OTOMATİK MESAJ DÜZENLEME ALANI -->
+            <div class="card">
+                <div class="card-title"><i class="fa-solid fa-envelope-open-text"></i> 3. Otomatik Mesaj Şablonlarını Düzenle</div>
+                <div class="form-group">
+                    <label>Dershane — Sınıf Ödev Hatırlatma Mesajı</label>
+                    <textarea id="template-class-reminder" class="form-control" style="height: 120px; font-family: monospace; font-size: 11px;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Dershane — Rehberlik Raporlama Mesajı</label>
+                    <textarea id="template-class-report" class="form-control" style="height: 120px; font-family: monospace; font-size: 11px;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Özel Ders — Ödev Hatırlatma Mesajı</label>
+                    <textarea id="template-ind-reminder" class="form-control" style="height: 120px; font-family: monospace; font-size: 11px;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Özel Ders — Veli Performans Raporu Mesajı</label>
+                    <textarea id="template-ind-report" class="form-control" style="height: 120px; font-family: monospace; font-size: 11px;"></textarea>
+                </div>
+                <p style="font-size: 11px; color: var(--text-light); margin-bottom: 8px;">* Dinamik alanları değiştirmemeye özen gösteriniz (Köşeli veya süslü parantezli yerler kod tarafından otomatik doldurulur).</p>
+                <button class="btn btn-primary" onclick="saveTemplates()"><i class="fa-solid fa-envelope-circle-check"></i> Şablonları Kaydet</button>
+            </div>
+
             <div class="card">
                 <div class="card-title"><i class="fa-solid fa-database"></i> Tanımlı Yapıları Düzenle / Sil</div>
                 <div id="defined-structures-management"></div>
@@ -268,7 +291,15 @@
         const mufredat = {
             "Mat-1 (Temel)": ["Temel Kavramlar & Sayı Kümeleri", "Ardışık Sayılar & Faktöriyel", "Sayı Basamakları", "Bölme - Bölünebilme Kuralları", "EBOB - EKOK", "Rasyonel & Ondalık Sayılar", "Birinci Dereceden Denklemler & Eşitsizlikler", "Mutlak Değer", "Üslü İfadeler", "Köklü İfadeler", "Çarpanlara Ayırma", "Oran - Oranti", "Sayı-Kesir Problemleri", "Yaş Problemleri", "İşçi Problemleri", "Hız / Hareket Problemleri", "Yüzde, Kar-Zarar, Karışım Problemleri", "Grafik Problemleri", "Kümeler & Kartezyen Çarpım", "Mantık", "Fonksiyonlar (Temel & Grafik)", "Permütasyon & Kombinasyon", "Binom Açılımı & Olasılık", "İstatiksel Veri Analizi"],
             "Mat-2 (İleri)": ["Polinomlar & Çözümleri", "İkinci Dereceden Denklemler", "Karmaşık Sayılar", "Eşitsizlikler ve Eşitsizlik Sistemleri", "Parabol (İkinci Dereceden Fonksiyonlar)", "Logaritma Fonksiyonu ve Denklemleri", "Diziler & Aritmetik-Geometrik Diziler", "Trigonometri-1 (Yönlü Açılar, Teoremler)", "Trigonometri-2 (Toplam-Fark, Yarım Açı, Denklemler)", "Limit ve Süreklilik", "Türev Alma Kuralları", "Türevin Geometrik Yorumu & Teğet", "Artan-Azalan Fonksiyonlar & Maksimum-Minimum Problemleri", "Belirsiz İntegral & Kuralları", "Belirli İntegral & Alan Hesabı"],
-            "Geometri": ["Doğruda ve Üçgende Açılar", "Dik Üçgen & Trigonometrik Oranlar", "İkizkenar ve Eşkenar Üçgen", "Üçgende Alan & Kenarortay-Açıoptay", "Üçgende Benzerlik & Eşlik", "Üçgen Eşitsizlikleri", "Çokgenler & Düzgün Çokgenler", "Paralelkenar & Eşkenar Dörtgen", "Dikdörtgen & Kare", "Deltoid & Yamuk", "Çemberde Açılar & Uzunluklar", "Dairenin Çevresi ve Alanı", "Prizma & Silindir (Katı Cisimler)", "Piramit & Koni & Küre", "Noktanın ve Doğrunun Analitiği", "Çemberin Analitik İncelenmesi", "Dönüşüm Geometrisi (Öteleme, Döndürme)"]
+            "Geometri": ["Doğruda ve Üçgende Açılar", "Dik Üçgen & Trigonometrik Oranlar", "İkizkenar ve Eşkenar Üçgen", "Üçgende Alan & Kenaroptay-Açıoptay", "Üçgende Benzerlik & Eşlik", "Üçgen Eşitsizlikleri", "Çokgenler & Düzgün Çokgenler", "Paralelkenar & Eşkenar Dörtgen", "Dikdörtgen & Kare", "Deltoid & Yamuk", "Çemberde Açılar & Uzunluklar", "Dairenin Çevresi ve Alanı", "Prizma & Silindir (Katı Cisimler)", "Piramit & Koni & Küre", "Noktanın ve Doğrunun Analitiği", "Çemberin Analitik İncelenmesi", "Dönüşüm Geometrisi (Öteleme, Döndürme)"]
+        };
+
+        // Varsayılan Mesaj Şablonları
+        const defaultTemplates = {
+            classReminder: "📢 *ÖDEV HATIRLATMASI ({className})*\n\nArkadaşlar, *{brans}* dersinden verilen *{konu}* konulu ödevimizin teslim zamanı yaklaşıyor.\n\n📖 *Kaynak:* {task}\n📅 *Son Süre:* {controlDate} saat {controlTime}\n\nLütfen eksiklerinizi tamamlayın. Başarılar! 🎯\n\n— {teacherName}",
+            classReport: "Değerli Rehberlik Servisi,\n\n*{controlDate}* tarihinde saat *{controlTime}* itibarıyla *{className}* sınıfının *{brans} ({konu})* ödevi kontrol edildi.\n\n❌ *Yapmayanlar:* {yapmayanlar}\n⚠️ *Eksikler:* {eksikler}\n\n— {teacherName}",
+            indReminder: "🔔 *Ödev Kontrol Hatırlatması*\n\n*{studentName}* ödevinin tamamlanıp bilgi verilmesi gereken son saat dilimi:\n\n📖 *Kaynak:* {task}\n⏱️ *Son Süre:* Bugün (*{controlDate}*) saat *{controlTime}* öncesidir.\n\nGeri dönüşünüzü bekliyorum, iyi çalışmalar. 🎯\n— {teacherName}",
+            indReport: "Sayın Velimiz ve Sevgili Öğrencim,\n\n*{studentName}* isimli öğrencimizin *{brans} ({konu})* ödev kontrolü tamamlanmıştır.\n\n📊 *Performans Sonuçları:*\n▪️ Toplam Soru: {total}\n▪️ Doğru: {dogru}\n▪️ Yanlış: {yanlis}\n▪️ Boş: {bos}\n🎯 *Başarı Oranı:* %{score}\n\nİyi çalışmalar dilerim.\n— {teacherName}"
         };
 
         let db = JSON.parse(localStorage.getItem('mobil_zumre_v12')) || {
@@ -277,12 +308,16 @@
             ogrenciler: [],
             setupClasses: [],
             setupIndividuals: [],
-            settings: { reminderOffsetMinutes: 60, teacherName: 'Mustafa Erkan Atalay' }
+            settings: { reminderOffsetMinutes: 60, teacherName: 'Sibel Tezel Atalay' },
+            templates: defaultTemplates
         };
 
+        // Geçmiş veri uyumluluğu kontrolü ve isim güncelleme güvencesi
         if(!db.setupClasses) db.setupClasses = [];
         if(!db.setupIndividuals) db.setupIndividuals = [];
         if(!db.ogrenciler) db.ogrenciler = [];
+        if(!db.templates) db.templates = defaultTemplates;
+        db.settings.teacherName = 'Sibel Tezel Atalay'; // İsmin kalıcı kalmasını sağlar
 
         window.onload = function() {
             const bugun = new Date().toISOString().split('T')[0];
@@ -292,6 +327,7 @@
             initBranchSelect('setup-ind-brans');
             document.getElementById('teacher-name').innerText = db.settings.teacherName;
             
+            loadTemplatesToUI();
             updateSetupSelectors();
             renderAll();
         };
@@ -308,6 +344,25 @@
             if (d.startsWith('0') && d.length === 11) return '90' + d.slice(1);
             if (d.length === 10) return '90' + d;
             return d;
+        }
+
+        // Şablon yükleme ve kaydetme fonksiyonları
+        function loadTemplatesToUI() {
+            document.getElementById('template-class-reminder').value = db.templates.classReminder || defaultTemplates.classReminder;
+            document.getElementById('template-class-report').value = db.templates.classReport || defaultTemplates.classReport;
+            document.getElementById('template-ind-reminder').value = db.templates.classReminder || defaultTemplates.indReminder;
+            document.getElementById('template-ind-report').value = db.templates.indReport || defaultTemplates.indReport;
+        }
+
+        function saveTemplates() {
+            db.templates = {
+                classReminder: document.getElementById('template-class-reminder').value,
+                classReport: document.getElementById('template-class-report').value,
+                indReminder: document.getElementById('template-ind-reminder').value,
+                indReport: document.getElementById('template-ind-report').value
+            };
+            saveDB();
+            alert("Tüm mesaj şablonları başarıyla kaydedildi.");
         }
 
         function secureExit() {
@@ -551,9 +606,17 @@
             const yapmayanlar = c.students.filter(s => s.status === 'Yapmadı').map(s => s.name);
             const eksikler = c.students.filter(s => s.status === 'Eksik').map(s => s.name);
             
-            let msg = `Değerli Rehberlik Servisi,\n\n*${trDate(c.controlDate)}* tarihinde saat *${c.controlTime}* itibarıyla *${c.className}* sınıfının *${c.brans} (${c.konu})* ödevi kontrol edildi.\n\n`;
-            msg += `❌ *Yapmayanlar:* ${yapmayanlar.length > 0 ? yapmayanlar.join(', ') : 'Yok'}\n`;
-            msg += `⚠️ *Eksikler:* ${eksikler.length > 0 ? eksikler.join(', ') : 'Yok'}\n\n— ${db.settings.teacherName}`;
+            // Şablondan mesajı oluşturma
+            let rawMsg = db.templates.classReport || defaultTemplates.classReport;
+            let msg = rawMsg
+                .replace(/{controlDate}/g, trDate(c.controlDate))
+                .replace(/{controlTime}/g, c.controlTime)
+                .replace(/{className}/g, c.className)
+                .replace(/{brans}/g, c.brans)
+                .replace(/{konu}/g, c.konu)
+                .replace(/{yapmayanlar}/g, yapmayanlar.length > 0 ? yapmayanlar.join(', ') : 'Yok')
+                .replace(/{eksikler}/g, eksikler.length > 0 ? eksikler.join(', ') : 'Yok')
+                .replace(/{teacherName}/g, db.settings.teacherName);
             
             const clsSetup = db.setupClasses.find(s => s.id === c.setupId || s.className === c.className);
             const rPhoneParam = (clsSetup && clsSetup.rehberlikPhone) ? `phone=${clsSetup.rehberlikPhone}&` : '';
@@ -564,11 +627,17 @@
         function sendClassReminderWhatsApp(id) {
             const c = db.dershane.find(i => i.id === id);
             if(!c) return;
-            let msg = `📢 *ÖDEV HATIRLATMASI (${c.className})*\n\n`;
-            msg += `Arkadaşlar, *${c.brans}* dersinden verilen *${c.konu}* konulu ödevimizin teslim zamanı yaklaşıyor.\n\n`;
-            msg += `📖 *Kaynak:* ${c.task}\n`;
-            msg += `📅 *Son Süre:* ${trDate(c.controlDate)} saat ${c.controlTime || '00:00'}\n\n`;
-            msg += `Lütfen eksiklerinizi tamamlayın. Başarılar! 🎯\n\n— ${db.settings.teacherName}`;
+
+            // Şablondan mesajı oluşturma
+            let rawMsg = db.templates.classReminder || defaultTemplates.classReminder;
+            let msg = rawMsg
+                .replace(/{className}/g, c.className)
+                .replace(/{brans}/g, c.brans)
+                .replace(/{konu}/g, c.konu)
+                .replace(/{task}/g, c.task)
+                .replace(/{controlDate}/g, trDate(c.controlDate))
+                .replace(/{controlTime}/g, c.controlTime || '00:00')
+                .replace(/{teacherName}/g, db.settings.teacherName);
             
             const clsSetup = db.setupClasses.find(s => s.id === c.setupId || s.className === c.className);
             let target = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
@@ -595,10 +664,18 @@
             };
             saveDB(); renderAll();
 
-            let msg = `Sayın Velimiz ve Sevgili Öğrencim,\n\n*${ind.studentName}* isimli öğrencimizin *${ind.brans} (${ind.konu})* ödev kontrolü tamamlanmıştır.\n\n`;
-            msg += `📊 *Performans Sonuçları:*\n`;
-            msg += `▪️ Toplam Soru: ${ind.results.total}\n▪️ Doğru: ${ind.results.dogru}\n▪️ Yanlış: ${ind.results.yanlis}\n▪️ Boş: ${ind.results.bos}\n`;
-            msg += `🎯 *Başarı Oranı:* %${ind.results.score}\n\nİyi çalışmalar dilerim.\n— ${db.settings.teacherName}`;
+            // Şablondan mesajı oluşturma
+            let rawMsg = db.templates.indReport || defaultTemplates.indReport;
+            let msg = rawMsg
+                .replace(/{studentName}/g, ind.studentName)
+                .replace(/{brans}/g, ind.brans)
+                .replace(/{konu}/g, ind.konu)
+                .replace(/{total}/g, ind.results.total)
+                .replace(/{dogru}/g, ind.results.dogru)
+                .replace(/{yanlis}/g, ind.results.yanlis)
+                .replace(/{bos}/g, ind.results.bos)
+                .replace(/{score}/g, ind.results.score)
+                .replace(/{teacherName}/g, db.settings.teacherName);
             
             const indSetup = db.setupIndividuals.find(s => s.id === ind.setupId);
             if (indSetup) {
@@ -611,11 +688,14 @@
             const ind = db.bireysel.find(i => i.id === id);
             if(!ind) return;
 
-            let msg = `🔔 *Ödev Kontrol Hatırlatması*\n\n`;
-            msg += `*${ind.studentName}* ödevinin tamamlanıp bilgi verilmesi gereken son saat dilimi:\n\n`;
-            msg += `📖 *Kaynak:* ${ind.task}\n`;
-            msg += `⏱️ *Son Süre:* Bugün (*${trDate(ind.controlDate)}*) saat *${ind.controlTime}* öncesidir.\n\n`;
-            msg += `Geri dönüşünüzü bekliyorum, iyi çalışmalar. 🎯\n— ${db.settings.teacherName}`;
+            // Şablondan mesajı oluşturma
+            let rawMsg = db.templates.indReminder || defaultTemplates.indReminder;
+            let msg = rawMsg
+                .replace(/{studentName}/g, ind.studentName)
+                .replace(/{task}/g, ind.task)
+                .replace(/{controlDate}/g, trDate(ind.controlDate))
+                .replace(/{controlTime}/g, ind.controlTime)
+                .replace(/{teacherName}/g, db.settings.teacherName);
             
             const indSetup = db.setupIndividuals.find(s => s.id === ind.setupId);
             if (indSetup) {
