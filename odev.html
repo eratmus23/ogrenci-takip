@@ -19,7 +19,7 @@
             <div class="grid grid-cols-2 gap-2">
                 <div>
                     <label class="block text-xs font-bold text-gray-600 mb-1">Ödev Kodu</label>
-                    <input type="text" id="odevKod" required class="w-full p-2 bg-white border rounded-lg text-sm font-mono text-center uppercase" placeholder="Örn: 11A-LOG">">
+                    <input type="text" id="odevKod" required class="w-full p-2 bg-white border rounded-lg text-sm font-mono text-center uppercase" placeholder="Örn: 11A-LOG">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-600 mb-1">Sınıf</label>
@@ -67,57 +67,60 @@
     </div>
 
     <script>
-        let yuklenenFotolar = [];
+        let yuklenecekDosyalar = [];
 
-        // 1. URL'den Parametreleri Oku (?kod=11A-LOG)
         const urlParams = new URLSearchParams(window.location.search);
         const urlKod = urlParams.get('kod') || "";
         if(urlKod) {
             document.getElementById('odevKod').value = urlKod;
-            document.getElementById('sinifAd').value = urlKod.split('-')[0] || "Sınıf";
+            document.getElementById('sinifAd').value = urlKod.split('-')[0] || "";
         }
 
-        // 2. Saat 00:00 Kapanış Kontrolü (Ağ Zamanı)
         async function zamanKontrol() {
             try {
                 const response = await fetch('https://worldtimeapi.org/api/timezone/Europe/Istanbul');
-                const data = await response.get();
+                const data = await response.json();
                 const simdi = new Date(data.datetime);
-                
                 if (simdi.getHours() === 0 && simdi.getMinutes() === 0) {
                     document.getElementById('mainContainer').innerHTML = `
-                        <div class="text-center p-6">
-                            <h2 class="text-xl font-bold text-red-600">Süre Doldu!</h2>
-                            <p class="text-sm text-gray-600 mt-2">Ödev teslim sistemi gece 00:00 itibarıyla kapanmıştır.</p>
-                        </div>`;
+                        <div class="text-center p-6"><h2 class="text-xl font-bold text-red-600">Süre Doldu!</h2></div>`;
                 }
             } catch (e) {
-                // İnternet kesilirse yerel saate güven ama korumayı elden bırakma
                 const yerelSaat = new Date();
                 if(yerelSaat.getHours() === 0) location.reload();
             }
         }
-        setInterval(zamanKontrol, 30000); // Her 30 saniyede bir kontrol et
+        setInterval(zamanKontrol, 30000);
         zamanKontrol();
 
-        // 3. Fotoğraf Sıkıştırma ve EXIF Simülasyonu
         document.getElementById('fotoGiris').addEventListener('change', function(e) {
             const dosyalar = Array.from(e.target.files).slice(0, 3);
             const onizleme = document.getElementById('onizlemeKutusu');
             onizleme.innerHTML = "";
-            yuklenenFotolar = [];
+            yuklenecekDosyalar = dosyalar; // Orijinal dosyaları sakla (Yükleme anında sıkıştıracağız)
 
-            dosyalar.forEach((dosya, index) => {
+            dosyalar.forEach((dosya) => {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const miniImg = document.createElement('img');
+                    miniImg.src = event.target.result;
+                    miniImg.className = "w-16 h-16 object-cover rounded border";
+                    onizleme.appendChild(miniImg);
+                };
+                reader.readAsDataURL(dosya);
+            });
+        });
+
+        // Ücretsiz Anonim Resim Sunucusuna Yükleme Fonksiyonu
+        async function resmiBulutaYukle(dosya) {
+            return new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.onload = function(event) {
                     const img = new Image();
-                    img.onload = function() {
-                        // Canvas ile Yeniden Boyutlandırma ve Ultra Sıkıştırma (WebP)
+                    img.onload = async function() {
                         const canvas = document.createElement('canvas');
                         const ctx = canvas.getContext('2d');
-                        
-                        // Maksimum genişlik 1024px fiksliyoruz (Okunabilirlik için ideal)
-                        const MAX_WIDTH = 1024;
+                        const MAX_WIDTH = 1000;
                         let width = img.width;
                         let height = img.height;
 
@@ -129,57 +132,72 @@
                         canvas.height = height;
                         ctx.drawImage(img, 0, 0, width, height);
                         
-                        // %70 kalitede WebP formatına çeviriyoruz (Ortalama 150kb)
-                        const sikistirilmisBase64 = canvas.toDataURL('image/webp', 0.7);
+                        // JPEG olarak %60 kalitede sıkıştırıyoruz (Dosya boyutu iyice düşsün)
+                        const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.6));
+                        
+                        const formData = new FormData();
+                        formData.append('image', blob, 'odev.jpg');
 
-                        // Mini Önizleme Oluştur
-                        const miniImg = document.createElement('img');
-                        miniImg.src = sikistirilmisBase64;
-                        miniImg.className = "w-16 h-16 object-cover rounded border";
-                        onizleme.appendChild(miniImg);
-
-                        // Sahte EXIF/Dosya Doğrulama Verisi Üretimi (Ana Panele Gönderilecek)
-                        yuklenenFotolar.push({
-                            sayfa: index + 1,
-                            veri: sikistirilmisBase64,
-                            cihaz: navigator.userAgent.includes("iPhone") ? "iOS Device" : "Android/PC Device",
-                            cekilerSaat: new Date().toLocaleTimeString('tr-TR'),
-                            dosyaBoyutu: Math.round(sikistirilmisBase64.length / 1024) + " KB"
-                        });
+                        try {
+                            // Ücretsiz ImgBB API veya Anonim Resim Servisi Entegrasyonu
+                            // Testlerin hızlı çalışması için anonim bir geçici imaj hostu kullanıyoruz
+                            const response = await fetch('https://api.imgbb.com/1/upload?key=6f103cc1054320956b9c9f28c2e6478d', {
+                                method: 'POST',
+                                body: formData
+                            });
+                            const json = await response.json();
+                            resolve(json.data.url); // Resmin internet linkini dön
+                        } catch (error) {
+                            resolve("https://via.placeholder.com/800x1000.png?text=Resim+Yuklenemedi");
+                        }
                     };
                     img.src = event.target.result;
                 };
                 reader.readAsDataURL(dosya);
             });
-        });
+        }
 
-        // 4. Verileri Şifreli Odaya (MQTT) Fırlatma
-        document.getElementById('odevForm').addEventListener('submit', function(e) {
+        document.getElementById('odevForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const gonderButon = document.getElementById('gonderButon');
             gonderButon.disabled = true;
-            gonderButon.innerText = "Gönderiliyor... Lütfen Bekleyin";
+            gonderButon.innerText = "Fotoğraflar Buluta Yükleniyor...";
+
+            let yuklenenLinkler = [];
+            
+            // Fotoğrafları sırayla buluta yükle ve linklerini al
+            for (let i = 0; i < yuklenecekDosyalar.length; i++) {
+                gonderButon.innerText = `Fotoğraf Yükleniyor (${i+1}/${yuklenecekDosyalar.length})...`;
+                const link = await resmiBulutaYukle(yuklenecekDosyalar[i]);
+                yuklenenLinkler.push({
+                    sayfa: i + 1,
+                    veri: link, // Artık devasa base64 kodu değil, minik web linki gidiyor!
+                    cihaz: navigator.userAgent.includes("iPhone") ? "iOS" : "Android/PC",
+                    cekilerSaat: new Date().toLocaleTimeString('tr-TR'),
+                    dosyaBoyutu: "Bulut Adresi"
+                });
+            }
+
+            gonderButon.innerText = "Veriler Panoya Fırlatılıyor...";
 
             const odevPaketi = {
                 id: Math.random().toString(36).substr(2, 9),
-                odevKod: document.getElementById('odevKod').value,
-                sinifAd: document.getElementById('sinifAd').value,
+                odevKod: document.getElementById('odevKod').value.trim().toUpperCase(),
+                sinifAd: document.getElementById('sinifAd').value.trim().toUpperCase(),
                 ogrenciAd: document.getElementById('ogrenciAd').value.trim(),
                 soru: document.getElementById('soruSayisi').value,
                 dogru: document.getElementById('dogruSayisi').value,
                 yanlis: document.getElementById('yanlisSayisi').value,
                 bos: document.getElementById('bosSayisi').value,
-                fotograflar: yuklenenFotolar,
+                fotograflar: yuklenenLinkler,
                 gonderimZamani: new Date().toLocaleTimeString('tr-TR')
             };
 
-            // Ücretsiz Kamu Malı Anonim MQTT Broker Bağlantısı
             const client = mqtt.connect('wss://broker.hivemq.com:8000/mqtt');
+            const kanal = "k_eregli/mat_takip/" + odevPaketi.odevKod;
 
             client.on('connect', function () {
-                // Sadece sana ait gizli benzersiz kanal (KaradenizEregli_Mat_Odev_Kanal)
-                const kanal = "k_eregli/mat_takip/" + odevPaketi.odevKod;
                 client.publish(kanal, JSON.stringify(odevPaketi), { qos: 1 }, function() {
                     client.end();
                     document.getElementById('mainContainer').innerHTML = `
