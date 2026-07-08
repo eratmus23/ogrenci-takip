@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mustafa Erkan Atalay — Akıllı Eğitim Asistanı v12</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #f1f5f9;
+            --surface: #ffffff;
+            --primary: #1e3a8a;
+            --accent: #3b82f6;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --text: #0f172a;
+            --text-light: #64748b;
+            --whatsapp: #25d366;
+            --whatsapp-reminder: #075e54;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg); color: var(--text); padding: 10px; padding-bottom: 80px; font-size: 14px; }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white; padding: 15px; border-radius: 12px; margin-bottom: 15px;
+            position: relative; box-shadow: 0 4px 15px rgba(30, 58, 138, 0.1);
+        }
+        header h1 { font-size: 1.2rem; font-weight: 700; margin-bottom: 2px; }
+        header p { font-size: 0.75rem; opacity: 0.9; }
+        
+        .exit-btn {
+            position: absolute; right: 60px; top: 18px; background: var(--danger); 
+            border: none; color: white; padding: 6px 12px; border-radius: 20px; 
+            font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px;
+        }
+
+        .nav-tabs { display: flex; gap: 4px; margin-bottom: 15px; background: #e2e8f0; padding: 4px; border-radius: 10px; }
+        .tab-btn {
+            flex: 1; padding: 10px 4px; border: none; border-radius: 8px; background: transparent;
+            font-weight: 700; cursor: pointer; font-size: 0.8rem; color: var(--text-light);
+            display: flex; align-items: center; justify-content: center; gap: 4px; transition: 0.2s;
+        }
+        .tab-btn.active { background: var(--surface); color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+        .card { background: var(--surface); padding: 15px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); margin-bottom: 15px; border: 1px solid #e2e8f0; }
+        .card-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; color: var(--primary); }
+
+        .form-group { margin-bottom: 10px; }
+        .form-group label { display: block; font-size: 0.75rem; font-weight: 600; margin-bottom: 4px; color: var(--text-light); }
+        .form-control { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.85rem; outline: none; background: #f8fafc; }
+        
+        .date-row { display: grid; grid-template-columns: 2fr 1fr; gap: 8px; }
+        .phone-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+        .btn { padding: 12px; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; color: white; width: 100%; }
+        .btn-primary { background: var(--primary); }
+        .btn-success { background: var(--success); }
+        .btn-danger { background: var(--danger); }
+        .btn-wa { background: var(--whatsapp); }
+        .btn-wa-rem { background: var(--whatsapp-reminder); }
+
+        .item-row { background: var(--surface); border-radius: 12px; padding: 12px; margin-bottom: 12px; border: 1px solid #e2e8f0; position: relative; }
+        .item-row.archived { opacity: 0.75; background: #f8fafc; border-style: dashed; }
+        .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .item-name { font-weight: 700; font-size: 0.95rem; }
+        
+        .student-check-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin: 10px 0; }
+        .student-check-item { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; padding: 10px 6px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .student-check-item.failed { border-color: var(--danger); background: #fef2f2; color: var(--danger); }
+        .student-check-item.excused { border-color: var(--warning); background: #fffbeb; color: var(--warning); }
+
+        .history-badge { display: inline-block; font-size: 0.7rem; padding: 2px 5px; border-radius: 5px; background: #f1f5f9; margin-right: 4px; margin-top: 4px; font-weight: 600; }
+        .history-list { margin-top: 8px; padding-top: 8px; border-top: 1px dashed #e2e8f0; }
+        
+        .mobile-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
+        .btn-small { padding: 8px; font-size: 0.75rem; border-radius: 6px; }
+
+        .profile-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 10px 0; }
+        .stat-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 4px; text-align: center; }
+        .stat-box .num { font-size: 1rem; font-weight: 700; color: var(--primary); }
+        .stat-box .lbl { font-size: 0.65rem; color: var(--text-light); }
+        .profile-detail { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e2e8f0; }
+        .profile-detail.open { display: block; }
+        .profile-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; padding: 6px 0; border-bottom: 1px solid #f1f5f9; }
+        .profile-row-tag { font-size: 0.65rem; padding: 2px 6px; border-radius: 5px; background: var(--primary); color: white; margin-right: 4px; }
+        .profile-row-tag.ind { background: var(--accent); }
+
+        .setup-item { background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+    </style>
+</head>
+<body>
+
+    <header id="main-header">
+        <h1 id="teacher-name" onclick="editTeacherName()" style="cursor:pointer;">Mustafa Erkan Atalay</h1>
+        <p>Akıllı Otomasyon Takip Paneli v12</p>
+        <button class="exit-btn" onclick="secureExit()"><i class="fa-solid fa-power-off"></i> Çıkış</button>
+        <button onclick="editReminderOffset()" style="position: absolute; right: 15px; top: 18px; background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px; border-radius: 50%; width: 35px; height: 35px;"><i class="fa-solid fa-gear"></i></button>
+    </header>
+
+    <div id="app-container">
+        <div class="nav-tabs">
+            <button class="tab-btn active" id="btn-tab-dershane" onclick="switchTab('dershane')"><i class="fa-solid fa-users"></i> Dershane</button>
+            <button class="tab-btn" id="btn-tab-bireysel" onclick="switchTab('bireysel')"><i class="fa-solid fa-user-graduated"></i> Özel Ders</button>
+            <button class="tab-btn" id="btn-tab-tanimlama" onclick="switchTab('tanimlama')"><i class="fa-solid fa-sliders"></i> Yapı Yönetimi</button>
+            <button class="tab-btn" id="btn-tab-ogrenciler" onclick="switchTab('ogrenciler')"><i class="fa-solid fa-id-card"></i> Öğrenciler</button>
+        </div>
+
+        <!-- ================== DERSHANE SEKMESİ ================== -->
+        <div id="tab-dershane" class="tab-content">
+            <div class="card">
+                <div class="card-title"><i class="fa-solid fa-folder-plus"></i> Sınıfa Ödev Ver</div>
+                <div class="form-group">
+                    <label>Sınıf Seçin</label>
+                    <select id="homework-class-select" class="form-control" onchange="handleClassSelectChange()"></select>
+                </div>
+                <div class="form-group">
+                    <label>Branş</label>
+                    <input type="text" id="class-brans-readonly" class="form-control" readonly style="background:#e2e8f0;">
+                </div>
+                <div class="form-group">
+                    <label>Ödev Konusu</label>
+                    <select id="class-konu-select" class="form-control" onchange="toggleCustomTopicInput('class-konu-select', 'class-custom-topic-group')"></select>
+                </div>
+                <div class="form-group" id="class-custom-topic-group" style="display:none;">
+                    <label>Özel Konu Adı</label>
+                    <input type="text" id="class-custom-topic" class="form-control" placeholder="Konuyu elle yazın...">
+                </div>
+                <div class="form-group">
+                    <label>Kaynak / Sayfa</label>
+                    <input type="text" id="class-task" class="form-control" placeholder="Örn: 345 Yayınları Limit Test 1">
+                </div>
+                <div class="date-row">
+                    <div class="form-group">
+                        <label>Kontrol Tarihi</label>
+                        <input type="date" id="class-date" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Saat</label>
+                        <input type="time" id="class-time" class="form-control" value="20:00">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="addClassHomework()"><i class="fa-solid fa-save"></i> Ödevi Zincire Ekle (Kaydet)</button>
+            </div>
+            <div class="card-title" style="padding-left:5px;"><i class="fa-solid fa-list"></i> Aktif Takip Listesi</div>
+            <div id="dershane-listesi"></div>
+        </div>
+
+        <!-- ================== BİREYSEL SEKMESİ ================== -->
+        <div id="tab-bireysel" class="tab-content" style="display: none;">
+            <div class="card">
+                <div class="card-title"><i class="fa-solid fa-user-plus"></i> Özel Derse Ödev Ver</div>
+                <div class="form-group">
+                    <label>Öğrenci Seçin</label>
+                    <select id="homework-ind-select" class="form-control" onchange="handleIndSelectChange()"></select>
+                </div>
+                <div class="form-group">
+                    <label>Branş</label>
+                    <input type="text" id="ind-brans-readonly" class="form-control" readonly style="background:#e2e8f0;">
+                </div>
+                <div class="form-group">
+                    <label>Ödev Konusu</label>
+                    <select id="ind-konu-select" class="form-control" onchange="toggleCustomTopicInput('ind-konu-select', 'ind-custom-topic-group')"></select>
+                </div>
+                <div class="form-group" id="ind-custom-topic-group" style="display:none;">
+                    <label>Özel Konu Adı</label>
+                    <input type="text" id="ind-custom-topic" class="form-control" placeholder="Konuyu elle yazın...">
+                </div>
+                <div class="form-group">
+                    <label>Kaynak / Sayfa</label>
+                    <input type="text" id="ind-task" class="form-control" placeholder="Örn: Orijinal Mat Türev Fasikülü">
+                </div>
+                <div class="date-row">
+                    <div class="form-group">
+                        <label>Kontrol Tarihi</label>
+                        <input type="date" id="ind-date" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Saat</label>
+                        <input type="time" id="ind-time" class="form-control" value="21:00">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="addIndividualHomework()"><i class="fa-solid fa-save"></i> Ödevi Zincire Ekle (Kaydet)</button>
+            </div>
+            <div class="card-title" style="padding-left:5px;"><i class="fa-solid fa-chart-line"></i> Bireysel Takip Listesi</div>
+            <div id="bireysel-listesi"></div>
+        </div>
+
+        <!-- ================== SENE BAŞI TANIMLAMA SEKMESİ ================== -->
+        <div id="tab-tanimlama" class="tab-content" style="display: none;">
+            <div class="card">
+                <div class="card-title"><i class="fa-solid fa-users-gear"></i> 1. Dershane Şubesi Tanımla</div>
+                <div class="form-group">
+                    <label>Sınıf Kodu / Adı</label>
+                    <input type="text" id="setup-class-name" class="form-control" placeholder="Örn: 12MF1">
+                </div>
+                <div class="form-group">
+                    <label>Bu Sınıfta Girdiğiniz Branş</label>
+                    <select id="setup-class-brans" class="form-control"></select>
+                </div>
+                <div class="form-group">
+                    <label>Sınıf WhatsApp Grup Tel/Link'i (İsteğe Bağlı)</label>
+                    <input type="text" id="setup-class-group-phone" class="form-control" placeholder="Örn: 05XXXXXXXXX veya grup linki">
+                </div>
+                <div class="form-group">
+                    <label>İlgili Rehberlik Servisi / Müd. Yard. Telefonu</label>
+                    <input type="tel" id="setup-class-rehberlik-phone" class="form-control" placeholder="05XX XXX XX XX">
+                </div>
+                <div class="form-group">
+                    <label>Öğrenci İsimleri (Her satıra bir isim gelecek şekilde yapıştırın)</label>
+                    <textarea id="setup-class-excel" class="form-control" style="height: 80px;" placeholder="Ahmet Yılmaz&#10;Merve Aydın"></textarea>
+                </div>
+                <button class="btn btn-success" onclick="saveClassSetup()"><i class="fa-solid fa-plus"></i> Şubeyi Kaydet</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fa-solid fa-user-gear"></i> 2. Özel Ders Öğrencisi Tanımla</div>
+                <div class="form-group">
+                    <label>Öğrenci Adı Soyadı</label>
+                    <input type="text" id="setup-ind-name" class="form-control" placeholder="Örn: Kaan Tezel">
+                </div>
+                <div class="form-group">
+                    <label>Girdiğiniz Branşlar (Birden fazla seçmek için basılı tutun)</label>
+                    <select id="setup-ind-brans" class="form-control" multiple style="height: 70px;"></select>
+                </div>
+                <div class="phone-row">
+                    <div class="form-group">
+                        <label>Öğrenci Tel (İsteğe Bağlı)</label>
+                        <input type="tel" id="setup-ind-student-phone" class="form-control" placeholder="05XX...">
+                    </div>
+                    <div class="form-group">
+                        <label>Veli Tel (İsteğe Bağlı)</label>
+                        <input type="tel" id="setup-ind-parent-phone" class="form-control" placeholder="05XX...">
+                    </div>
+                </div>
+                <button class="btn btn-success" onclick="saveIndividualSetup()"><i class="fa-solid fa-plus"></i> Öğrenciyi Kaydet</button>
+            </div>
+
+            <!-- OTOMATİK MESAJ DÜZENLEME ALANI -->
+            <div class="card">
+                <div class="card-title"><i class="fa-solid fa-envelope-open-text"></i> 3. Otomatik Mesaj Şablonlarını Düzenle</div>
+                <div class="form-group">
+                    <label>Dershane — Sınıf Ödev Hatırlatma Mesajı</label>
+                    <textarea id="template-class-reminder" class="form-control" style="height: 120px; font-family: monospace; font-size: 11px;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Dershane — Rehberlik Raporlama Mesajı</label>
+                    <textarea id="template-class-report" class="form-control" style="height: 120px; font-family: monospace; font-size: 11px;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Özel Ders — Ödev Hatırlatma Mesajı</label>
+                    <textarea id="template-ind-reminder" class="form-control" style="height: 120px; font-family: monospace; font-size: 11px;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Özel Ders — Veli Performans Raporu Mesajı</label>
+                    <textarea id="template-ind-report" class="form-control" style="height: 120px; font-family: monospace; font-size: 11px;"></textarea>
+                </div>
+                <p style="font-size: 11px; color: var(--text-light); margin-bottom: 8px;">* Dinamik alanları değiştirmemeye özen gösteriniz (Köşeli veya süslü parantezli yerler kod tarafından otomatik doldurulur).</p>
+                <button class="btn btn-primary" onclick="saveTemplates()"><i class="fa-solid fa-envelope-circle-check"></i> Şablonları Kaydet</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fa-solid fa-database"></i> Tanımlı Yapıları Düzenle / Sil</div>
+                <div id="defined-structures-management"></div>
+            </div>
+        </div>
+
+        <!-- ================== ÖĞRENCİLER SEKMESİ ================== -->
+        <div id="tab-ogrenciler" class="tab-content" style="display: none;">
+            <div class="card">
+                <div class="card-title"><i class="fa-solid fa-magnifying-glass"></i> Öğrenci Ara ve Yönet</div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <input type="text" id="ogrenci-arama" class="form-control" placeholder="İsme göre filtrele..." oninput="renderOgrenciler()">
+                </div>
+            </div>
+            <div class="card-title" style="padding-left:5px;"><i class="fa-solid fa-users-line"></i> Tüm Öğrenciler (Yıllık Birleşik Profil Verisi)</div>
+            <div id="ogrenciler-listesi"></div>
+        </div>
+    </div>
+
+    <!-- GÜVENLİ ÇIKIŞ GÖRÜNÜMÜ -->
+    <div id="secure-exit-screen" style="display: none; text-align: center; padding: 40px 20px; margin-top: 50px;">
+        <i class="fa-solid fa-circle-check" style="font-size: 4rem; color: var(--success); margin-bottom: 20px;"></i>
+        <h2 style="margin-bottom: 10px;">Oturum Sıfırlandı</h2>
+        <p style="color: var(--text-light); line-height: 1.6;">Verileriniz cihaz hafızasında güvenle saklanmaktadır. <br>Yönlendiriliyorsunuz...</p>
+    </div>
+
+    <script>
+        const mufredat = {
+            "Mat-1 (Temel)": ["Temel Kavramlar & Sayı Kümeleri", "Ardışık Sayılar & Faktöriyel", "Sayı Basamakları", "Bölme - Bölünebilme Kuralları", "EBOB - EKOK", "Rasyonel & Ondalık Sayılar", "Birinci Dereceden Denklemler & Eşitsizlikler", "Mutlak Değer", "Üslü İfadeler", "Köklü İfadeler", "Çarpanlara Ayırma", "Oran - Oranti", "Sayı-Kesir Problemleri", "Yaş Problemleri", "İşçi Problemleri", "Hız / Hareket Problemleri", "Yüzde, Kar-Zarar, Karışım Problemleri", "Grafik Problemleri", "Kümeler & Kartezyen Çarpım", "Mantık", "Fonksiyonlar (Temel & Grafik)", "Permütasyon & Kombinasyon", "Binom Açılımı & Olasılık", "İstatiksel Veri Analizi"],
+            "Mat-2 (İleri)": ["Polinomlar & Çözümleri", "İkinci Dereceden Denklemler", "Karmaşık Sayılar", "Eşitsizlikler ve Eşitsizlik Sistemleri", "Parabol (İkinci Dereceden Fonksiyonlar)", "Logaritma Fonksiyonu ve Denklemleri", "Diziler & Aritmetik-Geometrik Diziler", "Trigonometri-1 (Yönlü Açılar, Teoremler)", "Trigonometri-2 (Toplam-Fark, Yarım Açı, Denklemler)", "Limit ve Süreklilik", "Türev Alma Kuralları", "Türevin Geometrik Yorumu & Teğet", "Artan-Azalan Fonksiyonlar & Maksimum-Minimum Problemleri", "Belirsiz İntegral & Kuralları", "Belirli İntegral & Alan Hesabı"],
+            "Geometri": ["Doğruda ve Üçgende Açılar", "Dik Üçgen & Trigonometrik Oranlar", "İkizkenar ve Eşkenar Üçgen", "Üçgende Alan & Kenaroptay-Açıoptay", "Üçgende Benzerlik & Eşlik", "Üçgen Eşitsizlikleri", "Çokgenler & Düzgün Çokgenler", "Paralelkenar & Eşkenar Dörtgen", "Dikdörtgen & Kare", "Deltoid & Yamuk", "Çemberde Açılar & Uzunluklar", "Dairenin Çevresi ve Alanı", "Prizma & Silindir (Katı Cisimler)", "Piramit & Koni & Küre", "Noktanın ve Doğrunun Analitiği", "Çemberin Analitik İncelenmesi", "Dönüşüm Geometrisi (Öteleme, Döndürme)"]
+        };
+
+        // Varsayılan Mesaj Şablonları
+        const defaultTemplates = {
+            classReminder: "📢 *ÖDEV HATIRLATMASI ({className})*\n\nArkadaşlar, *{brans}* dersinden verilen *{konu}* konulu ödevimizin teslim zamanı yaklaşıyor.\n\n📖 *Kaynak:* {task}\n📅 *Son Süre:* {controlDate} saat {controlTime}\n\nLütfen eksiklerinizi tamamlayın. Başarılar! 🎯\n\n— {teacherName}",
+            classReport: "Değerli Rehberlik Servisi,\n\n*{controlDate}* tarihinde saat *{controlTime}* itibarıyla *{className}* sınıfının *{brans} ({konu})* ödevi kontrol edildi.\n\n❌ *Yapmayanlar:* {yapmayanlar}\n⚠️ *Eksikler:* {eksikler}\n\n— {teacherName}",
+            indReminder: "🔔 *Ödev Kontrol Hatırlatması*\n\n*{studentName}* ödevinin tamamlanıp bilgi verilmesi gereken son saat dilimi:\n\n📖 *Kaynak:* {task}\n⏱️ *Son Süre:* Bugün (*{controlDate}*) saat *{controlTime}* öncesidir.\n\nGeri dönüşünüzü bekliyorum, iyi çalışmalar. 🎯\n— {teacherName}",
+            indReport: "Sayın Velimiz ve Sevgili Öğrencim,\n\n*{studentName}* isimli öğrencimizin *{brans} ({konu})* ödev kontrolü tamamlanmıştır.\n\n📊 *Performans Sonuçları:*\n▪️ Toplam Soru: {total}\n▪️ Doğru: {dogru}\n▪️ Yanlış: {yanlis}\n▪️ Boş: {bos}\n🎯 *Başarı Oranı:* %{score}\n\nİyi çalışmalar dilerim.\n— {teacherName}"
+        };
+
+        let db = JSON.parse(localStorage.getItem('mobil_zumre_v12')) || {
+            dershane: [],
+            bireysel: [],
+            ogrenciler: [],
+            setupClasses: [],
+            setupIndividuals: [],
+            settings: { reminderOffsetMinutes: 60, teacherName: 'Mustafa Erkan Atalay' },
+            templates: defaultTemplates
+        };
+
+        // Geçmiş veri uyumluluğu kontrolü ve isim güncelleme güvencesi
+        if(!db.setupClasses) db.setupClasses = [];
+        if(!db.setupIndividuals) db.setupIndividuals = [];
+        if(!db.ogrenciler) db.ogrenciler = [];
+        if(!db.templates) db.templates = defaultTemplates;
+        db.settings.teacherName = 'Mustafa Erkan Atalay'; // İsmin kalıcı kalmasını sağlar
+
+        window.onload = function() {
+            const bugun = new Date().toISOString().split('T')[0];
+            document.querySelectorAll('input[type="date"]').forEach(el => el.value = bugun);
+            
+            initBranchSelect('setup-class-brans');
+            initBranchSelect('setup-ind-brans');
+            document.getElementById('teacher-name').innerText = db.settings.teacherName;
+            
+            loadTemplatesToUI();
+            updateSetupSelectors();
+            renderAll();
+        };
+
+        function saveDB() { localStorage.setItem('mobil_zumre_v12', JSON.stringify(db)); }
+        function normalizeName(name) { return (name || '').trim().toLocaleLowerCase('tr').replace(/\s+/g, ' '); }
+        function trDate(dStr) { return dStr.split('-').reverse().join('.'); }
+        
+        function normalizePhone(phone) {
+            if(!phone) return '';
+            let d = phone.replace(/\D/g, '');
+            if (!d) return '';
+            if (d.startsWith('90') && d.length === 12) return d;
+            if (d.startsWith('0') && d.length === 11) return '90' + d.slice(1);
+            if (d.length === 10) return '90' + d;
+            return d;
+        }
+
+        // Şablon yükleme ve kaydetme fonksiyonları
+        function loadTemplatesToUI() {
+            document.getElementById('template-class-reminder').value = db.templates.classReminder || defaultTemplates.classReminder;
+            document.getElementById('template-class-report').value = db.templates.classReport || defaultTemplates.classReport;
+            document.getElementById('template-ind-reminder').value = db.templates.classReminder || defaultTemplates.indReminder;
+            document.getElementById('template-ind-report').value = db.templates.indReport || defaultTemplates.indReport;
+        }
+
+        function saveTemplates() {
+            db.templates = {
+                classReminder: document.getElementById('template-class-reminder').value,
+                classReport: document.getElementById('template-class-report').value,
+                indReminder: document.getElementById('template-ind-reminder').value,
+                indReport: document.getElementById('template-ind-report').value
+            };
+            saveDB();
+            alert("Tüm mesaj şablonları başarıyla kaydedildi.");
+        }
+
+        function secureExit() {
+            if(confirm("Uygulamayı güvenle kapatmak istiyor musunuz?")) {
+                document.getElementById('app-container').style.display = 'none';
+                document.getElementById('main-header').style.display = 'none';
+                document.getElementById('secure-exit-screen').style.display = 'block';
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            }
+        }
+
+        function initBranchSelect(id) {
+            const select = document.getElementById(id);
+            select.innerHTML = id === 'setup-class-brans' ? "<option value=''>--- Seçin ---</option>" : "";
+            for (let b in mufredat) { select.innerHTML += `<option value="${b}">${b}</option>`; }
+        }
+
+        function fillTopicSelect(brans, selectId) {
+            const select = document.getElementById(selectId);
+            select.innerHTML = "";
+            
+            if(brans) {
+                const branslar = brans.split(', ');
+                branslar.forEach(b => {
+                    if(mufredat[b]) {
+                        mufredat[b].forEach(k => { select.innerHTML += `<option value="${k}">${k}</option>`; });
+                    }
+                });
+            }
+            select.innerHTML += `<option value="OZEL_KONU">— KENDİM YAZACAĞIM —</option>`;
+        }
+
+        function toggleCustomTopicInput(selectId, groupId) {
+            const val = document.getElementById(selectId).value;
+            document.getElementById(groupId).style.display = (val === 'OZEL_KONU') ? 'block' : 'none';
+        }
+
+        function getOrCreateStudent(name) {
+            const clean = (name || '').trim();
+            if (!clean) return null;
+            const key = normalizeName(clean);
+            let ogr = db.ogrenciler.find(o => normalizeName(o.name) === key);
+            if (!ogr) {
+                ogr = { id: Date.now() + Math.floor(Math.random() * 1000), name: clean, studentPhone: '', parentPhone: '' };
+                db.ogrenciler.push(ogr);
+            }
+            return ogr;
+        }
+
+        function saveClassSetup() {
+            const name = document.getElementById('setup-class-name').value.trim();
+            const brans = document.getElementById('setup-class-brans').value;
+            const gPhone = document.getElementById('setup-class-group-phone').value.trim();
+            const rPhone = document.getElementById('setup-class-rehberlik-phone').value.trim();
+            const text = document.getElementById('setup-class-excel').value.trim();
+
+            if(!name || !brans || !text) { alert("Lütfen şube adı, branş ve öğrenci listesini doldurun."); return; }
+
+            const studentIds = text.split('\n').map(i => i.trim()).filter(i => i.length > 0).map(isim => {
+                let ogr = getOrCreateStudent(isim);
+                return ogr.id;
+            });
+
+            db.setupClasses = db.setupClasses.filter(c => normalizeName(c.className) !== normalizeName(name));
+            db.setupClasses.push({
+                id: Date.now(), className: name, brans, 
+                groupPhone: gPhone, rehberlikPhone: normalizePhone(rPhone), students: studentIds
+            });
+            
+            saveDB(); updateSetupSelectors(); renderAll();
+            alert(`"${name}" şubesi başarıyla tanımlandı.`);
+            
+            document.getElementById('setup-class-name').value = "";
+            document.getElementById('setup-class-group-phone').value = "";
+            document.getElementById('setup-class-rehberlik-phone').value = "";
+            document.getElementById('setup-class-excel').value = "";
+        }
+
+        function saveIndividualSetup() {
+            const name = document.getElementById('setup-ind-name').value.trim();
+            const selectEl = document.getElementById('setup-ind-brans');
+            const selectedOptions = Array.from(selectEl.selectedOptions).map(opt => opt.value);
+            const sPhone = document.getElementById('setup-ind-student-phone').value.trim();
+            const pPhone = document.getElementById('setup-ind-parent-phone').value.trim();
+
+            if(!name || selectedOptions.length === 0) { alert("Öğrenci adı ve en az bir branş zorunludur."); return; }
+
+            const brans = selectedOptions.join(', ');
+
+            let ogr = getOrCreateStudent(name);
+            ogr.studentPhone = normalizePhone(sPhone);
+            ogr.parentPhone = normalizePhone(pPhone);
+
+            db.setupIndividuals = db.setupIndividuals.filter(i => normalizeName(i.name) !== normalizeName(name));
+            db.setupIndividuals.push({ 
+                id: Date.now(), studentId: ogr.id, name, brans, 
+                studentPhone: normalizePhone(sPhone), parentPhone: normalizePhone(pPhone) 
+            });
+
+            saveDB(); updateSetupSelectors(); renderAll();
+            alert(`"${name}" özel ders yapısı kaydedildi.`);
+            
+            document.getElementById('setup-ind-name').value = "";
+            selectEl.selectedIndex = -1;
+            document.getElementById('setup-ind-student-phone').value = "";
+            document.getElementById('setup-ind-parent-phone').value = "";
+        }
+
+        function deleteSetupStructure(type, id) {
+            if(confirm("Bu kurumsal yapıyı silmek istediğinize emin misiniz?")) {
+                if(type === 'class') db.setupClasses = db.setupClasses.filter(c => c.id !== id);
+                if(type === 'ind') db.setupIndividuals = db.setupIndividuals.filter(i => i.id !== id);
+                saveDB(); updateSetupSelectors(); renderAll();
+            }
+        }
+
+        function updateSetupSelectors() {
+            const classSel = document.getElementById('homework-class-select');
+            classSel.innerHTML = "<option value=''>--- Sınıf Seçin ---</option>";
+            db.setupClasses.forEach(c => { classSel.innerHTML += `<option value="${c.id}">${c.className}</option>`; });
+
+            const indSel = document.getElementById('homework-ind-select');
+            indSel.innerHTML = "<option value=''>--- Öğrenci Seçin ---</option>";
+            db.setupIndividuals.forEach(i => { indSel.innerHTML += `<option value="${i.id}">${i.name}</option>`; });
+        }
+
+        function handleClassSelectChange() {
+            const id = document.getElementById('homework-class-select').value;
+            const cls = db.setupClasses.find(c => c.id == id);
+            if(cls) {
+                document.getElementById('class-brans-readonly').value = cls.brans;
+                fillTopicSelect(cls.brans, 'class-konu-select');
+                toggleCustomTopicInput('class-konu-select', 'class-custom-topic-group');
+            }
+        }
+
+        function handleIndSelectChange() {
+            const id = document.getElementById('homework-ind-select').value;
+            const ind = db.setupIndividuals.find(i => i.id == id);
+            if(ind) {
+                document.getElementById('ind-brans-readonly').value = ind.brans;
+                fillTopicSelect(ind.brans, 'ind-konu-select');
+                toggleCustomTopicInput('ind-konu-select', 'ind-custom-topic-group');
+            }
+        }
+
+        function addBothToCalendar(baseTitle, details, controlDate, controlTime) {
+            const offset = db.settings.reminderOffsetMinutes || 60;
+            const kYil = controlDate.replace(/-/g, '');
+            const kSaat = controlTime.replace(/:/g, '') + '00';
+            const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(baseTitle)}&dates=${kYil}T${kSaat}/${kYil}T${kSaat}&details=${encodeURIComponent(details)}&remind=email-${offset}&remind=popup-15&ctz=Europe/Istanbul`;
+            window.open(url, '_blank');
+        }
+
+        function addClassHomework() {
+            const classSetupId = document.getElementById('homework-class-select').value;
+            if(!classSetupId) { alert("Lütfen tanımlı bir sınıf seçin."); return; }
+            
+            const clsSetup = db.setupClasses.find(c => c.id == classSetupId);
+            const rawTopic = document.getElementById('class-konu-select').value;
+            const konu = (rawTopic === 'OZEL_KONU') ? document.getElementById('class-custom-topic').value.trim() : rawTopic;
+            const task = document.getElementById('class-task').value.trim();
+            const cDate = document.getElementById('class-date').value;
+            const cTime = document.getElementById('class-time').value;
+
+            if(!konu || !task || !cDate) { alert("Ödev konusu, kaynak ve kontrol tarihi zorununlu!"); return; }
+
+            const students = clsSetup.students.map(id => {
+                let o = db.ogrenciler.find(x => x.id === id);
+                return { id: id, name: o ? o.name : 'Bilinmeyen', status: 'Yapıldı' };
+            });
+
+            db.dershane.push({
+                id: Date.now(), className: clsSetup.className, students, brans: clsSetup.brans,
+                konu, task, controlDate: cDate, controlTime: cTime, isCompleted: false, setupId: clsSetup.id
+            });
+
+            saveDB();
+            addBothToCalendar(`✅ Kontrol: ${clsSetup.className} - ${clsSetup.brans}`, `Konu: ${konu}\nKaynak: ${task}`, cDate, cTime);
+            
+            document.getElementById('homework-class-select').value = "";
+            document.getElementById('class-brans-readonly').value = "";
+            document.getElementById('class-konu-select').innerHTML = "";
+            document.getElementById('class-custom-topic').value = "";
+            document.getElementById('class-task').value = "";
+            document.getElementById('class-custom-topic-group').style.display = 'none';
+
+            renderAll();
+        }
+
+        function addIndividualHomework() {
+            const indSetupId = document.getElementById('homework-ind-select').value;
+            if(!indSetupId) { alert("Lütfen tanımlı bir öğrenci seçin."); return; }
+
+            const indSetup = db.setupIndividuals.find(i => i.id == indSetupId);
+            const rawTopic = document.getElementById('ind-konu-select').value;
+            const konu = (rawTopic === 'OZEL_KONU') ? document.getElementById('ind-custom-topic').value.trim() : rawTopic;
+            const task = document.getElementById('ind-task').value.trim();
+            const cDate = document.getElementById('ind-date').value;
+            const cTime = document.getElementById('ind-time').value;
+
+            if(!konu || !task || !cDate) { alert("Ödev konusu, kaynak ve kontrol tarihi zorununlu!"); return; }
+
+            db.bireysel.push({
+                id: Date.now(), studentId: indSetup.studentId, studentName: indSetup.name,
+                brans: indSetup.brans, konu, task, controlDate: cDate, controlTime: cTime,
+                status: 'Bekliyor', results: null, setupId: indSetup.id
+            });
+
+            saveDB();
+            addBothToCalendar(`🎯 Özel Ders Kontrol: ${indSetup.name}`, `Konu: ${konu}\nKaynak: ${task}`, cDate, cTime);
+
+            document.getElementById('homework-ind-select').value = "";
+            document.getElementById('ind-brans-readonly').value = "";
+            document.getElementById('ind-konu-select').innerHTML = "";
+            document.getElementById('ind-custom-topic').value = "";
+            document.getElementById('ind-task').value = "";
+            document.getElementById('ind-custom-topic-group').style.display = 'none';
+
+            renderAll();
+        }
+
+        function toggleClassStudentStatus(classId, idx) {
+            const c = db.dershane.find(i => i.id === classId);
+            if(c && !c.isCompleted) {
+                const cur = c.students[idx].status;
+                c.students[idx].status = cur === 'Yapıldı' ? 'Yapmadı' : cur === 'Yapmadı' ? 'Eksik' : 'Yapıldı';
+                saveDB(); renderAll();
+            }
+        }
+
+        function saveClassReport(id) {
+            const c = db.dershane.find(i => i.id === id);
+            if(!c) return;
+
+            c.isCompleted = true;
+            saveDB(); renderAll();
+
+            const yapmayanlar = c.students.filter(s => s.status === 'Yapmadı').map(s => s.name);
+            const eksikler = c.students.filter(s => s.status === 'Eksik').map(s => s.name);
+            
+            // Şablondan mesajı oluşturma
+            let rawMsg = db.templates.classReport || defaultTemplates.classReport;
+            let msg = rawMsg
+                .replace(/{controlDate}/g, trDate(c.controlDate))
+                .replace(/{controlTime}/g, c.controlTime)
+                .replace(/{className}/g, c.className)
+                .replace(/{brans}/g, c.brans)
+                .replace(/{konu}/g, c.konu)
+                .replace(/{yapmayanlar}/g, yapmayanlar.length > 0 ? yapmayanlar.join(', ') : 'Yok')
+                .replace(/{eksikler}/g, eksikler.length > 0 ? eksikler.join(', ') : 'Yok')
+                .replace(/{teacherName}/g, db.settings.teacherName);
+            
+            const clsSetup = db.setupClasses.find(s => s.id === c.setupId || s.className === c.className);
+            const rPhoneParam = (clsSetup && clsSetup.rehberlikPhone) ? `phone=${clsSetup.rehberlikPhone}&` : '';
+
+            window.open(`https://api.whatsapp.com/send?${rPhoneParam}text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        function sendClassReminderWhatsApp(id) {
+            const c = db.dershane.find(i => i.id === id);
+            if(!c) return;
+
+            // Şablondan mesajı oluşturma
+            let rawMsg = db.templates.classReminder || defaultTemplates.classReminder;
+            let msg = rawMsg
+                .replace(/{className}/g, c.className)
+                .replace(/{brans}/g, c.brans)
+                .replace(/{konu}/g, c.konu)
+                .replace(/{task}/g, c.task)
+                .replace(/{controlDate}/g, trDate(c.controlDate))
+                .replace(/{controlTime}/g, c.controlTime || '00:00')
+                .replace(/{teacherName}/g, db.settings.teacherName);
+            
+            const clsSetup = db.setupClasses.find(s => s.id === c.setupId || s.className === c.className);
+            let target = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+            if(clsSetup && clsSetup.groupPhone) {
+                const purePhone = normalizePhone(clsSetup.groupPhone);
+                if(purePhone) target = `https://api.whatsapp.com/send?phone=${purePhone}&text=${encodeURIComponent(msg)}`;
+                else if(clsSetup.groupPhone.includes('http')) target = clsSetup.groupPhone; 
+            }
+            window.open(target, '_blank');
+        }
+
+        function closeIndividualTask(id) {
+            const total = parseInt(prompt("Toplam Soru Sayısı?"), 10) || 0;
+            const dogru = parseInt(prompt("Doğru Sayısı?"), 10) || 0;
+            const yanlis = parseInt(prompt("Yanlış Sayısı?"), 10) || 0;
+            
+            const ind = db.bireysel.find(i => i.id === id);
+            if(!ind) return;
+
+            ind.status = 'Tamamlandı';
+            ind.results = {
+                total, dogru, yanlis, bos: total - (dogru + yanlis),
+                score: total > 0 ? Math.round((dogru / total) * 100) : 0
+            };
+            saveDB(); renderAll();
+
+            // Şablondan mesajı oluşturma
+            let rawMsg = db.templates.indReport || defaultTemplates.indReport;
+            let msg = rawMsg
+                .replace(/{studentName}/g, ind.studentName)
+                .replace(/{brans}/g, ind.brans)
+                .replace(/{konu}/g, ind.konu)
+                .replace(/{total}/g, ind.results.total)
+                .replace(/{dogru}/g, ind.results.dogru)
+                .replace(/{yanlis}/g, ind.results.yanlis)
+                .replace(/{bos}/g, ind.results.bos)
+                .replace(/{score}/g, ind.results.score)
+                .replace(/{teacherName}/g, db.settings.teacherName);
+            
+            const indSetup = db.setupIndividuals.find(s => s.id === ind.setupId);
+            if (indSetup) {
+                if (indSetup.parentPhone) window.open(`https://api.whatsapp.com/send?phone=${indSetup.parentPhone}&text=${encodeURIComponent(msg)}`, '_blank');
+                if (indSetup.studentPhone) setTimeout(() => { window.open(`https://api.whatsapp.com/send?phone=${indSetup.studentPhone}&text=${encodeURIComponent(msg)}`, '_blank'); }, 1000);
+            }
+        }
+
+        function sendIndividualReminderWhatsApp(id) {
+            const ind = db.bireysel.find(i => i.id === id);
+            if(!ind) return;
+
+            // Şablondan mesajı oluşturma
+            let rawMsg = db.templates.indReminder || defaultTemplates.indReminder;
+            let msg = rawMsg
+                .replace(/{studentName}/g, ind.studentName)
+                .replace(/{task}/g, ind.task)
+                .replace(/{controlDate}/g, trDate(ind.controlDate))
+                .replace(/{controlTime}/g, ind.controlTime)
+                .replace(/{teacherName}/g, db.settings.teacherName);
+            
+            const indSetup = db.setupIndividuals.find(s => s.id === ind.setupId);
+            if (indSetup) {
+                let launched = false;
+                if (indSetup.parentPhone) { window.open(`https://api.whatsapp.com/send?phone=${indSetup.parentPhone}&text=${encodeURIComponent(msg)}`, '_blank'); launched = true; }
+                if (indSetup.studentPhone) {
+                    setTimeout(() => { window.open(`https://api.whatsapp.com/send?phone=${indSetup.studentPhone}&text=${encodeURIComponent(msg)}`, '_blank'); }, launched ? 1200 : 0);
+                }
+            }
+        }
+
+        function reopenClassTask(id) {
+            const c = db.dershane.find(i => i.id === id);
+            if(c) { c.isCompleted = false; saveDB(); renderAll(); }
+        }
+
+        function reopenIndividualTask(id) {
+            const ind = db.bireysel.find(i => i.id === id);
+            if(ind) { ind.status = 'Bekliyor'; ind.results = null; saveDB(); renderAll(); }
+        }
+
+        function deleteStudentFromSystem(id) {
+            if(confirm("Bu öğrenciyi sistem hafızasından ve tüm şubelerden tamamen silmek istiyor musunuz?")) {
+                db.ogrenciler = db.ogrenciler.filter(o => o.id !== id);
+                db.setupClasses.forEach(c => c.students = c.students.filter(sid => sid !== id));
+                saveDB(); renderAll();
+            }
+        }
+
+        function renderAll() {
+            const dershaneDiv = document.getElementById('dershane-listesi');
+            const bireyselDiv = document.getElementById('bireysel-listesi');
+            dershaneDiv.innerHTML = ""; bireyselDiv.innerHTML = "";
+
+            const sortedDershane = [...db.dershane].sort((a,b) => a.isCompleted - b.isCompleted);
+            sortedDershane.forEach(c => {
+                const card = document.createElement('div'); 
+                card.className = `item-row ${c.isCompleted ? 'archived' : ''}`;
+                
+                let bHtml = "";
+                c.students.forEach((st, idx) => {
+                    let cls = st.status === 'Yapmadı' ? 'failed' : st.status === 'Eksik' ? 'excused' : '';
+                    bHtml += `<div class="student-check-item ${cls}" onclick="toggleClassStudentStatus(${c.id}, ${idx})">${st.name}</div>`;
+                });
+
+                card.innerHTML = `
+                    <div class="item-header">
+                        <div><span class="item-name">${c.className}</span> <br><small style="color:var(--text-light)">${c.brans} — ${c.konu}</small></div>
+                        <i class="fa-solid fa-trash" style="color:var(--danger); padding:5px; cursor:pointer;" onclick="deleteItem('dershane', ${c.id})"></i>
+                    </div>
+                    <div style="font-size:0.75rem; background:rgba(0,0,0,0.03); padding:6px; border-radius:6px; margin-bottom:8px;">
+                        📅 Kontrol: ${trDate(c.controlDate)} (${c.controlTime}) | 📖 ${c.task}
+                    </div>
+                    <div class="student-check-list">${bHtml}</div>
+                    <div class="mobile-actions">
+                        ${c.isCompleted ? `<button class="btn btn-danger btn-small" onclick="reopenClassTask(${c.id})"><i class="fa-solid fa-lock-open"></i> Geri Aç</button>` : `<button class="btn btn-success btn-small" onclick="saveClassReport(${c.id})"><i class="fa-solid fa-check-double"></i> Kapat & Raporla</button>`}
+                        ${!c.isCompleted ? `<button class="btn btn-wa-rem btn-small" onclick="sendClassReminderWhatsApp(${c.id})"><i class="fa-solid fa-bullhorn"></i> Gruptan Hatırlat</button>` : ''}
+                    </div>
+                `;
+                dershaneDiv.appendChild(card);
+            });
+
+            const sortedBireysel = [...db.bireysel].sort((a,b) => (a.status === 'Tamamlandı') - (b.status === 'Tamamlandı'));
+            sortedBireysel.forEach(ind => {
+                const card = document.createElement('div');
+                card.className = `item-row ${ind.status === 'Tamamlandı' ? 'archived' : ''}`;
+                
+                let resHtml = "";
+                if(ind.status === 'Tamamlandı' && ind.results) {
+                    resHtml = `
+                        <div class="history-list">
+                            <span class="history-badge">Soru: ${ind.results.total}</span><span class="history-badge">D: ${ind.results.dogru}</span><span class="history-badge">Y: ${ind.results.yanlis}</span>
+                            <div style="margin-top:4px; font-weight:700; color:var(--accent); font-size:0.8rem;">Başarı Skoru: %${ind.results.score}</div>
+                        </div>`;
+                }
+
+                card.innerHTML = `
+                    <div class="item-header">
+                        <div><span class="item-name">${ind.studentName}</span> <br><small style="color:var(--text-light)">${ind.brans} — ${ind.konu}</small></div>
+                        <i class="fa-solid fa-trash" style="color:var(--danger); padding:5px; cursor:pointer;" onclick="deleteItem('bireysel', ${ind.id})"></i>
+                    </div>
+                    <div style="font-size:0.75rem; background:rgba(0,255,0,0.03); padding:6px; border-radius:6px;">
+                        ⏱️ Hedef: ${trDate(ind.controlDate)} (${ind.controlTime}) | 📖 ${ind.task}
+                    </div>
+                    ${resHtml}
+                    <div class="mobile-actions">
+                        ${ind.status === 'Bekliyor' ? 
+                            `<button class="btn btn-primary btn-small" onclick="closeIndividualTask(${ind.id})"><i class="fa-solid fa-calculator"></i> Verileri Gir</button>
+                             <button class="btn btn-wa-rem btn-small" onclick="sendIndividualReminderWhatsApp(${ind.id})"><i class="fa-solid fa-clock"></i> Çift Hatırlat</button>` :
+                            `<button class="btn btn-danger btn-small" onclick="reopenIndividualTask(${ind.id})"><i class="fa-solid fa-lock-open"></i> Geri Aç</button>`
+                        }
+                    </div>
+                `;
+                bireyselDiv.appendChild(card);
+            });
+
+            renderDefinedStructures();
+            renderOgrenciler();
+        }
+
+        function renderDefinedStructures() {
+            const wrap = document.getElementById('defined-structures-management');
+            if(!wrap) return; wrap.innerHTML = "";
+
+            let html = "<h4 style='font-size:0.85rem; margin-bottom:8px; color:var(--primary);'>Sınıf Şubeleri:</h4>";
+            db.setupClasses.forEach(c => {
+                html += `
+                <div class="setup-item">
+                    <div><strong>${c.className}</strong> (${c.brans}) <br><small>${c.students.length} Öğrenci</small></div>
+                    <button class="btn btn-danger btn-small" style="width:auto; padding:5px 10px;" onclick="deleteSetupStructure('class', ${c.id})"><i class="fa-solid fa-trash"></i> Sil</button>
+                </div>`;
+            });
+
+            html += "<h4 style='font-size:0.85rem; margin-top:12px; margin-bottom:8px; color:var(--primary);'>Özel Ders Yapıları:</h4>";
+            db.setupIndividuals.forEach(i => {
+                html += `
+                <div class="setup-item">
+                    <div><strong>${i.name}</strong> (${i.brans}) <br><small>Öğr: ${i.studentPhone || '—'} | Veli: ${i.parentPhone || '—'}</small></div>
+                    <button class="btn btn-danger btn-small" style="width:auto; padding:5px 10px;" onclick="deleteSetupStructure('ind', ${i.id})"><i class="fa-solid fa-trash"></i> Sil</button>
+                </div>`;
+            });
+            wrap.innerHTML = html;
+        }
+
+        function renderOgrenciler() {
+            const wrap = document.getElementById('ogrenciler-listesi');
+            if (!wrap) return; wrap.innerHTML = "";
+
+            const filtre = normalizeName(document.getElementById('ogrenci-arama')?.value || '');
+            const liste = db.ogrenciler.filter(o => !filtre || normalizeName(o.name).includes(filtre));
+
+            liste.forEach(ogr => {
+                const dershaneKayitlari = [];
+                db.dershane.forEach(c => {
+                    const st = c.students.find(s => s.id === ogr.id);
+                    if (st) dershaneKayitlari.push({ className: c.className, brans: c.brans, konu: c.konu, status: st.status, date: c.controlDate });
+                });
+
+                const bireyselKayitlari = db.bireysel.filter(ind => ind.studentId === ogr.id);
+                const toplamOdev = dershaneKayitlari.length + bireyselKayitlari.length;
+                
+                const yapmadi = dershaneKayitlari.filter(k => k.status === 'Yapmadı').length;
+                const eksik = dershaneKayitlari.filter(k => k.status === 'Eksik').length;
+                
+                const tamamlananBireysel = bireyselKayitlari.filter(i => i.status === 'Tamamlandı' && i.results);
+                const ortalamaSkor = tamamlananBireysel.length > 0 ? Math.round(tamamlananBireysel.reduce((sum, i) => sum + i.results.score, 0) / tamamlananBireysel.length) : null;
+
+                let detayHtml = "";
+                dershaneKayitlari.slice().reverse().forEach(k => {
+                    detayHtml += `<div class="profile-row"><span><span class="profile-row-tag">Sınıf</span> ${k.className} - ${k.konu}</span><span style="font-weight:700; color:${k.status==='Yapmadı'?'var(--danger)':k.status==='Eksik'?'var(--warning)':'var(--success)'}">${k.status}</span></div>`;
+                });
+                bireyselKayitlari.slice().reverse().forEach(i => {
+                    detayHtml += `<div class="profile-row"><span><span class="profile-row-tag ind">Özel</span> ${i.konu}</span><span style="font-weight:700; color:var(--accent)">${i.status==='Tamamlandı'?'%'+i.results.score:'Bekliyor'}</span></div>`;
+                });
+
+                const card = document.createElement('div'); card.className = 'item-row';
+                card.innerHTML = `
+                    <div class="item-header" onclick="document.getElementById('det-${ogr.id}').classList.toggle('open')">
+                        <div><span class="item-name">${ogr.name}</span></div>
+                        <i class="fa-solid fa-chevron-down" style="color:var(--text-light)"></i>
+                    </div>
+                    <div style="text-align:right; margin-top:-5px; margin-bottom:5px;">
+                        <span style="color:var(--danger); font-size:0.7rem; font-weight:700; cursor:pointer;" onclick="deleteStudentFromSystem(${ogr.id})"><i class="fa-solid fa-user-minus"></i> Öğrenciyi Sistemden Temizle</span>
+                    </div>
+                    <div class="profile-stats">
+                        <div class="stat-box"><div class="num">${toplamOdev}</div><div class="lbl">Verilen</div></div>
+                        <div class="stat-box"><div class="num" style="color:var(--danger)">${yapmadi}/${eksik}</div><div class="lbl">Ypm/Eks</div></div>
+                        <div class="stat-box"><div class="num">${ortalamaSkor ? '%'+ortalamaSkor : '—'}</div><div class="lbl">Ort. Başarı</div></div>
+                    </div>
+                    <div class="profile-detail" id="det-${ogr.id}">${detayHtml || 'Kayıt bulunamadı.'}</div>
+                `;
+                wrap.appendChild(card);
+            });
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+            document.getElementById('btn-tab-' + tab).classList.add('active');
+            document.getElementById('tab-' + tab).style.display = 'block';
+            if(tab === 'ogrenciler') renderOgrenciler();
+        }
+
+        function deleteItem(type, id) { if(confirm("Bu ödev kaydını listeden silmek istiyor musunuz?")) { db[type] = db[type].filter(i => i.id !== id); saveDB(); renderAll(); } }
+        function editTeacherName() { const n = prompt("Adınız:", db.settings.teacherName); if(n) { db.settings.teacherName = n; saveDB(); document.getElementById('teacher-name').innerText = n; } }
+        function editReminderOffset() { const m = prompt("Google Takvim bildirimi ana saatten kaç dk önce çalmalı?", db.settings.reminderOffsetMinutes); if(m) { db.settings.reminderOffsetMinutes = parseInt(m,10); saveDB(); } }
+    </script>
+</body>
+</html>
